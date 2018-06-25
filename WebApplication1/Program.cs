@@ -15,6 +15,24 @@ namespace WebApplication1
 {
     public class Program
     {
+       
+        public static void Main(string[] args)
+        {
+            BuildWebHost(args).Run();
+            bildLäs.Main2();
+
+
+        }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .Build();
+        
+    }
+
+    public class bildLäs
+    {
         // Replace <Subscription Key> with your valid subscription key.
         const string subscriptionKey = "<0ee718c975b0495ba129cc0b3b06a6f4>";
 
@@ -28,9 +46,9 @@ namespace WebApplication1
         // this region.
         const string uriBase =
             "https://westeurope.api.cognitive.microsoft.com/vision/v1.0/ocr";
-        public static void Main(string[] args)
+        public static void Main2()
         {
-           
+            
 
             // Get the path and filename to process from the user.
             Console.WriteLine("Optical Character Recognition:");
@@ -49,11 +67,8 @@ namespace WebApplication1
             }
             Console.WriteLine("\nPress Enter to exit...");
             Console.ReadLine();
-            BuildWebHost(args).Run();
+
         }
-
-        
-
         /// <summary>
         /// Gets the text visible in the specified image file by using
         /// the Computer Vision REST API.
@@ -104,7 +119,6 @@ namespace WebApplication1
                 Console.WriteLine("\n" + e.Message);
             }
         }
-
         /// <summary>
         /// Returns the contents of the specified file as a byte array.
         /// </summary>
@@ -120,10 +134,6 @@ namespace WebApplication1
             }
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
     }
 }
 
