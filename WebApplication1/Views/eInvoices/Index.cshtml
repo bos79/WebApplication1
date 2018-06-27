@@ -1,0 +1,221 @@
+﻿@model IEnumerable<WebApplication1.Models.eInvoice>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.CurrencyCode)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.PurchOrderNo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.PayType)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Amount)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.InvoiceDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.InvoiceDateSpecified)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DueDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DueDateSpecified)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.VatAmount)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Authorizor)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.OurCustomerNo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.InvoiceType)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Supplier)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.SupplierNo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.InvoiceNo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Ocr)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Freight)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FreightSpecified)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.VatCode)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Pg)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Bg)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.OrgNo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.OurReference)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.YourReference)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.InvoiceRecipient)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Address)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.PostCode)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.City)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Message)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Vat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.InvoiceFee)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Project)
+                </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CurrencyCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PurchOrderNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PayType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Amount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InvoiceDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InvoiceDateSpecified)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DueDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DueDateSpecified)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VatAmount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Authorizor)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OurCustomerNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InvoiceType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Supplier)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SupplierNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InvoiceNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Ocr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Freight)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FreightSpecified)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VatCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Pg)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bg)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OrgNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OurReference)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.YourReference)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InvoiceRecipient)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PostCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.City)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Message)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Vat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InvoiceFee)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Project)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.eInvoiceId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.eInvoiceId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.eInvoiceId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

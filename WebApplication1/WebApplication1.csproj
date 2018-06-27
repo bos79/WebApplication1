@@ -6,8 +6,10 @@
 
   <ItemGroup>
     <PackageReference Include="bootstrap" Version="4.1.1" />
+    <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="iTextSharp" Version="5.5.13" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.8" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

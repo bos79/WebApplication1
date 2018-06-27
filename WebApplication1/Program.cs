@@ -15,11 +15,12 @@ namespace WebApplication1
 {
     public class Program
     {
-       
+        
         public static void Main(string[] args)
         {
+            
             BuildWebHost(args).Run();
-            bildLäs.Main2();
+            
 
 
         }
@@ -34,7 +35,7 @@ namespace WebApplication1
     public class bildLäs
     {
         // Replace <Subscription Key> with your valid subscription key.
-        const string subscriptionKey = "<0ee718c975b0495ba129cc0b3b06a6f4>";
+        const string subscriptionKey = "ea6cd28f14ce464ca99359e08ffe9d80";
 
         // You must use the same region in your REST call as you used to
         // get your subscription keys. For example, if you got your
@@ -46,27 +47,31 @@ namespace WebApplication1
         // this region.
         const string uriBase =
             "https://westeurope.api.cognitive.microsoft.com/vision/v1.0/ocr";
-        public static void Main2()
+        public static async Task<String> Main2(String Pdf)
         {
             
 
             // Get the path and filename to process from the user.
-            Console.WriteLine("Optical Character Recognition:");
-            Console.Write("Enter the path to an image with text you wish to read: ");
-            string imageFilePath = Console.ReadLine();
+            //Console.WriteLine("Optical Character Recognition:");
+            //Console.Write("Enter the path to an image with text you wish to read: ");
+            string imageFilePath = Pdf;
 
             if (File.Exists(imageFilePath))
             {
                 // Make the REST API call.
                 Console.WriteLine("\nWait a moment for the results to appear.\n");
-                MakeOCRRequest(imageFilePath).Wait();
+                string jsonData = await MakeOCRRequest(imageFilePath);
+
+                return jsonData;
+
             }
             else
             {
                 Console.WriteLine("\nInvalid file path");
+                return null;
             }
-            Console.WriteLine("\nPress Enter to exit...");
-            Console.ReadLine();
+            
+           
 
         }
         /// <summary>
@@ -74,7 +79,7 @@ namespace WebApplication1
         /// the Computer Vision REST API.
         /// </summary>
         /// <param name="imageFilePath">The image file with printed text.</param>
-        static async Task MakeOCRRequest(string imageFilePath)
+        private static async Task<string> MakeOCRRequest(string imageFilePath)
         {
             try
             {
@@ -111,12 +116,15 @@ namespace WebApplication1
                 string contentString = await response.Content.ReadAsStringAsync();
 
                 // Display the JSON response.
+                
                 Console.WriteLine("\nResponse:\n\n{0}\n",
-                    JToken.Parse(contentString).ToString());
+                JToken.Parse(contentString).ToString());
+                return contentString;
             }
             catch (Exception e)
             {
                 Console.WriteLine("\n" + e.Message);
+                return null;
             }
         }
         /// <summary>
