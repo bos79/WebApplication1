@@ -10,17 +10,28 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Ghostscript.NET;
+using Ghostscript.NET.Interpreter;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using System.Drawing;
 
 namespace WebApplication1
 {
     public class Program
     {
-        
+
         public static void Main(string[] args)
         {
-            
+            PdfImageExtractor.AddFile();
+            string PdfPath = @"C:\Users\ERIP\Downloads";
+            string fileName = "0004B9B7.pdf";
+            string Pdf = System.IO.Path.Combine(PdfPath, fileName);
+            var images = PdfImageExtractor.ExtractImages(Pdf);
+            bildLäs.SaveFile(images);
+            var data = bildLäs.Main2(Pdf);
             BuildWebHost(args).Run();
-            
+
 
 
         }
@@ -29,11 +40,13 @@ namespace WebApplication1
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .Build();
-        
+
     }
+
 
     public class bildLäs
     {
+
         // Replace <Subscription Key> with your valid subscription key.
         const string subscriptionKey = "ea6cd28f14ce464ca99359e08ffe9d80";
 
@@ -49,7 +62,7 @@ namespace WebApplication1
             "https://westeurope.api.cognitive.microsoft.com/vision/v1.0/ocr";
         public static async Task<String> Main2(String Pdf)
         {
-            
+           
 
             // Get the path and filename to process from the user.
             //Console.WriteLine("Optical Character Recognition:");
@@ -70,8 +83,8 @@ namespace WebApplication1
                 Console.WriteLine("\nInvalid file path");
                 return null;
             }
-            
-           
+
+
 
         }
         /// <summary>
@@ -116,7 +129,7 @@ namespace WebApplication1
                 string contentString = await response.Content.ReadAsStringAsync();
 
                 // Display the JSON response.
-                
+
                 Console.WriteLine("\nResponse:\n\n{0}\n",
                 JToken.Parse(contentString).ToString());
                 return contentString;
@@ -141,7 +154,16 @@ namespace WebApplication1
                 return binaryReader.ReadBytes((int)fileStream.Length);
             }
         }
-
+        internal static void SaveFile(Dictionary<string, Image> images)
+        {
+            var outPath = "image";
+            foreach (var name in images.Keys)
+            {
+                //if there is a filetype save the file
+                if (name.LastIndexOf(".") + 1 != name.Length)
+                    images[name].Save(System.IO.Path.Combine(outPath, name));
+            }
+        }
     }
 }
 

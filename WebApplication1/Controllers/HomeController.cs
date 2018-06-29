@@ -19,12 +19,9 @@ namespace WebApplication1.Controllers
         {
             ViewData["Message"] = "Your application description page.";
 
-            string PdfPath = @"C:\Users\ERIP\Downloads";
-            string fileName = "0004B9B7.JPG";
-            string Pdf = System.IO.Path.Combine(PdfPath, fileName);
-            var data = bildLäs.Main2(Pdf);
+            
 
-            return View(data);
+            return View();
         }
 
         public IActionResult Contact()
