@@ -6,6 +6,10 @@ using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System.IO;
 using System.Drawing.Drawing2D;
+using System.Drawing;
+using System.Text;
+using System.Drawing.Imaging;
+using System.Reflection;
 
 namespace WebApplication1
 {
@@ -22,6 +26,7 @@ namespace WebApplication1
             string Pdf = System.IO.Path.Combine(PdfPath, fileName);
             PageContainsImages(Pdf, 1);
             }
+        
         /// <summary>Checks whether a specified page of a PDF file contains images.</summary>
         /// <returns>True if the page contains at least one image; false otherwise.</returns>
         public static bool PageContainsImages(string filename, int pageNumber)
@@ -147,38 +152,46 @@ namespace WebApplication1
              * 
              * Uncomment the code above to verify, but when I've seen this happen, 
              * width, height and bits per component all equal zero as well. */
-                //if (filter != null)
-                //{
-                    System.Drawing.Image drawingImage = image.GetDrawingImage();
+            //if (filter != null)
+            //{
+                    Image drawingImage = image.GetDrawingImage();
 
-                    string extension = ".JPG";
+            string extension = "jpeg";
 
-                    if (filter == PdfName.DCTDECODE)
-                    {
-                        extension += PdfImageObject.ImageBytesType.JPG.FileExtension;
-                    }
-                    else if (filter == PdfName.JPXDECODE)
-                    {
-                        extension += PdfImageObject.ImageBytesType.JP2.FileExtension;
-                    }
-                    else if (filter == PdfName.FLATEDECODE)
-                    {
-                        extension += PdfImageObject.ImageBytesType.PNG.FileExtension;
-                    }
-                    else if (filter == PdfName.LZWDECODE)
-                    {
-                        extension += PdfImageObject.ImageBytesType.CCITT.FileExtension;
-                    }
+            //if (filter == PdfName.DCTDECODE)
+            //{
+            //    extension += PdfImageObject.ImageBytesType.JPG.FileExtension;
+            //}
+            //else if (filter == PdfName.JPXDECODE)
+            //{
+            //    extension += PdfImageObject.ImageBytesType.JP2.FileExtension;
+            //}
+            //else if (filter == PdfName.FLATEDECODE)
+            //{
+            //    extension += PdfImageObject.ImageBytesType.PNG.FileExtension;
+            //}
+            //else if (filter == PdfName.LZWDECODE)
+            //{
+            //    extension += PdfImageObject.ImageBytesType.CCITT.FileExtension;
+            //}
 
-                    /* Rather than struggle with the image stream and try to figure out how to handle 
-                     * BitMapData scan lines in various formats (like virtually every sample I've found 
-                     * online), use the PdfImageObject.GetDrawingImage() method, which does the work for us. */
-                    this.Images.Add(drawingImage, extension);
+            /* Rather than struggle with the image stream and try to figure out how to handle 
+             * BitMapData scan lines in various formats (like virtually every sample I've found 
+             * online), use the PdfImageObject.GetDrawingImage() method, which does the work for us. */
+            this.Images.Add(drawingImage, extension);
+                    string name = @"C:\Users\ERIP\Downloads\"+image.Get(PdfName.NAME).ToString()+".JPG";
+                    byte[] byteArray = Encoding.UTF8.GetBytes(name);
+                    MemoryStream stream = new MemoryStream(byteArray);
+                    drawingImage.Save(name, ImageFormat.Gif);
+                    var JasonReturn= BildLäs.Main2(name);
+
                     
-                //}
-            }
+            //}
+        }
 
-            public void RenderText(TextRenderInfo renderInfo) { }
+
+
+        public void RenderText(TextRenderInfo renderInfo) { }
 
             #endregion Public Methods
 

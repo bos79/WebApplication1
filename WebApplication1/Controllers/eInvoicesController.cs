@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,26 @@ namespace WebApplication1.Controllers
         // GET: eInvoices
         public async Task<IActionResult> Index()
         {
+            //using (StreamReader sr = new StreamReader(Server.MapPath("~/Content/treatments.json")))
+            //{
+            //    treatments = JsonConvert.DeserializeObject<List<Treatment>>(sr.ReadToEnd());
+            //}
             return View(await _context.eInvoice.ToListAsync());
+        }
+        [HttpPost]
+        public JsonResult PostJsonData(eInvoice incomingData)
+        {
+            string status = null;
+            try
+            {
+                //saveSquirrel(incomingData);
+                status = "If you don't see this, something went wrong.";
+            }
+            catch (Exception e)
+            {
+                status = e.ToString();
+            }
+            return Json(status);
         }
 
         // GET: eInvoices/Details/5

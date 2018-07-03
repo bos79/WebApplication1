@@ -15,6 +15,10 @@ using Ghostscript.NET.Interpreter;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Text;
+using System.Runtime.Serialization.Json;
+using Newtonsoft.Json;
 
 namespace WebApplication1
 {
@@ -23,13 +27,15 @@ namespace WebApplication1
 
         public static void Main(string[] args)
         {
+
             PdfImageExtractor.AddFile();
             string PdfPath = @"C:\Users\ERIP\Downloads";
             string fileName = "0004B9B7.pdf";
             string Pdf = System.IO.Path.Combine(PdfPath, fileName);
             var images = PdfImageExtractor.ExtractImages(Pdf);
-            bildLäs.SaveFile(images);
-            var data = bildLäs.Main2(Pdf);
+         
+            //BildLäs.SaveFile(images);
+           // var data = BildLäs.Main2(Pdf);
             BuildWebHost(args).Run();
 
 
@@ -43,10 +49,10 @@ namespace WebApplication1
 
     }
 
-
-    public class bildLäs
+    
+    public class BildLäs
     {
-
+        public String JsonFile { get; set; }
         // Replace <Subscription Key> with your valid subscription key.
         const string subscriptionKey = "ea6cd28f14ce464ca99359e08ffe9d80";
 
@@ -74,6 +80,8 @@ namespace WebApplication1
                 // Make the REST API call.
                 Console.WriteLine("\nWait a moment for the results to appear.\n");
                 string jsonData = await MakeOCRRequest(imageFilePath);
+
+                BildLäs.ReturnJson(jsonData);
 
                 return jsonData;
 
@@ -154,17 +162,34 @@ namespace WebApplication1
                 return binaryReader.ReadBytes((int)fileStream.Length);
             }
         }
-        internal static void SaveFile(Dictionary<string, Image> images)
+        public static string ReturnJson(string j)
         {
-            var outPath = "image";
-            foreach (var name in images.Keys)
+            // serialize JSON to a string and then write string to a file
+            File.WriteAllText(@"C:\Users\ERIP\Downloads\JsonFile.json", j);
+
+            using (StreamWriter file = File.CreateText(@"C:\Users\ERIP\Downloads\JsonFile.json"))
             {
-                //if there is a filetype save the file
-                if (name.LastIndexOf(".") + 1 != name.Length)
-                    images[name].Save(System.IO.Path.Combine(outPath, name));
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, j);
             }
+            ReadToObject(j);
+            return j;
+        }
+        public static Models.eInvoice ReadToObject(string json)
+        {
+            Models.eInvoice deserializedUser = new Models.eInvoice();
+            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(deserializedUser.GetType());
+            deserializedUser = ser.ReadObject(ms) as Models.eInvoice;
+            ms.Close();
+           
+           
+
+            return deserializedUser;
         }
     }
-}
+ }
+    
+
 
 
