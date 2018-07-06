@@ -10,8 +10,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Ghostscript.NET;
-using Ghostscript.NET.Interpreter;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System.Drawing;
@@ -19,6 +17,8 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Runtime.Serialization.Json;
 using Newtonsoft.Json;
+using Microsoft.ProjectOxford.Vision.Contract;
+using System.Text.RegularExpressions;
 
 namespace WebApplication1
 {
@@ -34,8 +34,7 @@ namespace WebApplication1
             string Pdf = System.IO.Path.Combine(PdfPath, fileName);
             var images = PdfImageExtractor.ExtractImages(Pdf);
          
-            //BildLäs.SaveFile(images);
-           // var data = BildLäs.Main2(Pdf);
+ 
             BuildWebHost(args).Run();
 
 
@@ -52,7 +51,6 @@ namespace WebApplication1
     
     public class BildLäs
     {
-        public String JsonFile { get; set; }
         // Replace <Subscription Key> with your valid subscription key.
         const string subscriptionKey = "ea6cd28f14ce464ca99359e08ffe9d80";
 
@@ -134,13 +132,16 @@ namespace WebApplication1
                 }
 
                 // Get the JSON response.
-                string contentString = await response.Content.ReadAsStringAsync();
+                string contentString = await   response.Content.ReadAsStringAsync();
 
                 // Display the JSON response.
+                var OrResult = JsonConvert.DeserializeObject<OcrResults>(contentString);
+                var result = StringBilders(OrResult);
+                var list = AddWordsToList(OrResult);
+                SearchList("Förfallodatum:", list);
+             
 
-                Console.WriteLine("\nResponse:\n\n{0}\n",
-                JToken.Parse(contentString).ToString());
-                return contentString;
+                return  result;
             }
             catch (Exception e)
             {
@@ -164,16 +165,85 @@ namespace WebApplication1
         }
         public static string ReturnJson(string j)
         {
+            
             // serialize JSON to a string and then write string to a file
             File.WriteAllText(@"C:\Users\ERIP\Downloads\JsonFile.json", j);
 
-            using (StreamWriter file = File.CreateText(@"C:\Users\ERIP\Downloads\JsonFile.json"))
+            using (StreamWriter file = File.CreateText(@"wwwroot\Ajax\JsonFile.txt"))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Serialize(file, j);
             }
             ReadToObject(j);
             return j;
+        }
+        public static string SearchList(string SearchString, List<string> WordList)
+        {
+            var lenght = WordList.Count;
+            var v ="0";
+            int i;
+            int j;
+            string pattern = @"\b\w+\S2000-00-00\b";
+            Regex rgx = new Regex(pattern);
+
+           // var m = WordList.Where(x => x.Contains(string.Format("1900-00-00"))).FirstOrDefault().ToString();
+            for(i=0; i < lenght; i++ )
+            {
+                foreach (Match match in rgx.Matches(WordList[i]))
+                Console.WriteLine("Found '{0}' at position {1}",
+                                  match.Value, match.Index);
+            }
+
+            return v;
+
+        }
+        public static List<string> AddWordsToList(OcrResults results)
+        {
+            List<string> WordList = new List<string>();
+            
+
+            if (results != null && results.Regions != null)
+            {
+                foreach (var item in results.Regions)
+                {
+                    foreach (var line in item.Lines)
+                    {
+                        foreach (var word in line.Words)
+                        {
+                           
+                            WordList.Add(word.Text);
+                           
+                        }
+                        
+                    }
+                   
+                }
+            }
+            return WordList;
+        }
+        public static string StringBilders(OcrResults results)
+        {
+                List<string> WordList = new List<string>();
+                StringBuilder stringBuilder = new StringBuilder();
+
+                if (results != null && results.Regions != null)
+                {
+                    foreach (var item in results.Regions)
+                    {
+                        foreach (var line in item.Lines)
+                        {
+                            foreach (var word in line.Words)
+                            {
+                                stringBuilder.Append(word.Text);
+                                WordList.Add(word.Text);
+                                stringBuilder.Append(" ");
+                            }
+                            stringBuilder.AppendLine();
+                        }
+                        stringBuilder.AppendLine();
+                    }
+                }
+                return stringBuilder.ToString();
         }
         public static Models.eInvoice ReadToObject(string json)
         {

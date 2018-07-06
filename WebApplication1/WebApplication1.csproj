@@ -7,10 +7,9 @@
   <ItemGroup>
     <PackageReference Include="bootstrap" Version="4.1.1" />
     <PackageReference Include="EntityFramework" Version="6.2.0" />
-    <PackageReference Include="Ghostscript" Version="9.2.0" />
-    <PackageReference Include="Ghostscript.NET" Version="1.2.1" />
     <PackageReference Include="iTextSharp" Version="5.5.13" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.8" />
+    <PackageReference Include="Microsoft.ProjectOxford.Vision.DotNetCore" Version="1.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
@@ -18,6 +17,10 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\Ajax\" />
   </ItemGroup>
 
 </Project>

@@ -22,10 +22,7 @@ namespace WebApplication1.Controllers
         // GET: eInvoices
         public async Task<IActionResult> Index()
         {
-            //using (StreamReader sr = new StreamReader(Server.MapPath("~/Content/treatments.json")))
-            //{
-            //    treatments = JsonConvert.DeserializeObject<List<Treatment>>(sr.ReadToEnd());
-            //}
+            
             return View(await _context.eInvoice.ToListAsync());
         }
         [HttpPost]
