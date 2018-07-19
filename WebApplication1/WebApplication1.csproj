@@ -12,7 +12,11 @@
     <PackageReference Include="Microsoft.ProjectOxford.Vision.DotNetCore" Version="1.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.0" />
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="2.0.0-preview2-25405-01" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Simplify.Resources" Version="1.0.1" />
+    <PackageReference Include="Simplify.Windows.Forms" Version="1.0.0" />
+    <PackageReference Include="System.Windows.Forms.Ribbon35" Version="3.5.8" />
   </ItemGroup>
 
   <ItemGroup>

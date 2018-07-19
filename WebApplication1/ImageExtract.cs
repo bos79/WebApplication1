@@ -10,38 +10,50 @@ using System.Drawing;
 using System.Text;
 using System.Drawing.Imaging;
 using System.Reflection;
+using System.Threading;
 
 namespace WebApplication1
 {
-   
-        public static class PdfImageExtractor
-        {
+
+    public static class PdfImageExtractor
+    {
+        public static string CurrentFilename;
         #region Methods
 
         #region Public Methods
         public static void AddFile()
-            { 
+        {
             string PdfPath = @"C:\Users\ERIP\Downloads";
             string fileName = "0004B9B7.pdf";
             string Pdf = System.IO.Path.Combine(PdfPath, fileName);
             PageContainsImages(Pdf, 1);
-            }
+        }
         
-        /// <summary>Checks whether a specified page of a PDF file contains images.</summary>
-        /// <returns>True if the page contains at least one image; false otherwise.</returns>
-        public static bool PageContainsImages(string filename, int pageNumber)
+
+
+
+
+    /// <summary>Checks whether a specified page of a PDF file contains images.</summary>
+    /// <returns>True if the page contains at least one image; false otherwise.</returns>
+    public static bool PageContainsImages(string filename, int pageNumber)
             {
-                using (var reader = new PdfReader(filename))
-                {
-                    var parser = new PdfReaderContentParser(reader);
-                    ImageRenderListener listener = null;
-                    parser.ProcessContent(pageNumber, (listener = new ImageRenderListener()));
-                    return listener.Images.Count > 0;
-                }
+            CurrentFilename = filename;
+            using (var reader = new PdfReader(filename))
+            {
+
+                var parser = new PdfReaderContentParser(reader);
+                ImageRenderListener listener = null;
+
+                parser.ProcessContent(pageNumber, (listener = new ImageRenderListener()));
+                return listener.Images.Count > 0;
             }
+            
+            
+
+        }
 
             /// <summary>Extracts all images (of types that iTextSharp knows how to decode) from a PDF file.</summary>
-            public static Dictionary<string, System.Drawing.Image> ExtractImages(string filename)
+            public static Dictionary<string, System.Drawing.Image> ExtractImage(string filename)
             {
                 var images = new Dictionary<string, System.Drawing.Image>();
 
@@ -67,7 +79,8 @@ namespace WebApplication1
                             }
                         }
                     }
-                    return images;
+                 
+                 return images;
                 }
             }
 
@@ -82,7 +95,7 @@ namespace WebApplication1
                 PdfReader reader = new PdfReader(filename);
                 PdfReaderContentParser parser = new PdfReaderContentParser(reader);
                 ImageRenderListener listener = null;
-
+                
                 parser.ProcessContent(pageNumber, (listener = new ImageRenderListener()));
                 int index = 1;
 
@@ -97,7 +110,8 @@ namespace WebApplication1
                         index++;
                     }
                 }
-                return images;
+            
+            return images;
             }
 
             #endregion Public Methods
@@ -133,7 +147,9 @@ namespace WebApplication1
             public void RenderImage(ImageRenderInfo renderInfo)
             {
                 PdfImageObject image = renderInfo.GetImage();
+            
                 var v = PdfName.FILTER;
+                
                 //PdfArray array = new PdfArray();
                 //array.Add(PdfName.FLATEDECODE);
                 //array.Add(PdfName.DCTDECODE);
@@ -156,7 +172,7 @@ namespace WebApplication1
             //{
                     Image drawingImage = image.GetDrawingImage();
 
-            string extension = "jpeg";
+            string extension = PdfImageObject.ImageBytesType.JPG.FileExtension;
 
             //if (filter == PdfName.DCTDECODE)
             //{
@@ -178,12 +194,13 @@ namespace WebApplication1
             /* Rather than struggle with the image stream and try to figure out how to handle 
              * BitMapData scan lines in various formats (like virtually every sample I've found 
              * online), use the PdfImageObject.GetDrawingImage() method, which does the work for us. */
-            this.Images.Add(drawingImage, extension);
-                    string name = @"C:\Users\ERIP\Downloads\"+image.Get(PdfName.NAME).ToString()+".JPG";
+            
+                    this.Images.Add(drawingImage, extension);
+                    string name = @"C:\Images\"+image.Get(PdfName.NAME).ToString()+".JPG";
                     byte[] byteArray = Encoding.UTF8.GetBytes(name);
                     MemoryStream stream = new MemoryStream(byteArray);
                     drawingImage.Save(name, ImageFormat.Gif);
-                    var JasonReturn= BildLäs.Main2(name);
+                    //var JasonReturn= BildLäs.Main2(name);
 
                     
             //}
