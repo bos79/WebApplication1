@@ -1,0 +1,19 @@
+﻿@model IEnumerable<WebApplication1.Models.eInvoice>
+@{
+    ViewData["Title"] = "TestPost";
+}
+<h2>TestPost</h2>
+@{
+    foreach (var item in Model)
+    {
+
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CurrencyCode)
+            </td>
+       </tr>
+    }
+}
+
+            
+

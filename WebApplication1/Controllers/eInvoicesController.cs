@@ -18,7 +18,14 @@ namespace WebApplication1.Controllers
         {
             _context = context;
         }
-
+        [HttpPost]
+        public ActionResult TestPost(string ListOfData)
+        {
+            
+            return View(ListOfData);
+            //var result = value;
+            //return Content("hello");
+        }
         // GET: eInvoices
         public async Task<IActionResult> Index()
         {

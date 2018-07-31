@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using WebApplication1.Models;
 
 namespace WebApplication1.Models
 {
@@ -18,5 +19,7 @@ namespace WebApplication1.Models
         }
 
         public DbSet<WebApplication1.Models.eInvoice> eInvoice { get; set; }
+
+        public DbSet<WebApplication1.Models.File> File { get; set; }
     }
 }

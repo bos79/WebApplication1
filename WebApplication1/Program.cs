@@ -25,6 +25,7 @@ using Simplify.Windows.Forms;
 using System.Windows.Forms.RibbonHelpers;
 using System.Threading;
 
+
 namespace WebApplication1
 {
     public class Program
@@ -230,7 +231,10 @@ namespace WebApplication1
                     Program.count++;
                     await Program.ExtraktAndGetImages(Pdf, NrOfPages);
                 }
-                getTheTotalAmount(Program.CombineList);
+               
+                var cashList = getTheTotalAmount(Program.CombineList);
+                PostDataToController(cashList);
+                getTheMaxValueAndCalculateMons(cashList);
                 GetMons(Program.CombineList);
                 GetOrgNumber(Program.CombineList);
                 SearchList("Förfallodatum:", Program.CombineList);
@@ -369,14 +373,64 @@ namespace WebApplication1
             }
             
         }
-
+        //kollar om moms o max värdet stämmer om det är så skicka till db
         public static void getTheMaxValueAndCalculateMons(List<String> MoneyList)
         {
+            List<string> TotaltVärde = new List<string>();
+            List<double> TotalMoms = new List<double>();
+            double MomsTjugoFem = 1.25;
+            double MomsTolv = 1.12;
+            double MomsSex = 1.06;
+            var max = MoneyList.OrderByDescending(v => Decimal.Parse(v)).FirstOrDefault();
+            //25 Moms beräkning
+            var sum = double.Parse(max) / MomsTjugoFem;
+            var resMoms25 = double.Parse(max) - sum;
+            //12 Moms beräkning
+            var sum2 = double.Parse(max) / MomsTolv;
+            var resMoms12 = double.Parse(max) - sum2;
+            //6 Moms beräkning
+            var sum3 = double.Parse(max) / MomsSex;
+            var resMoms6 = double.Parse(max) - sum3;
+            foreach (var item in MoneyList)
+            {
+                if(resMoms25 == Math.Truncate( Convert.ToDouble(item)))
+                {
+                    TotaltVärde.Add(max);
+                    TotalMoms.Add(resMoms25);
+                }
+                else if(resMoms12 == Math.Truncate(Convert.ToDouble(item)))
+                {
+                    TotaltVärde.Add(max);
+                    TotalMoms.Add(resMoms25);
+                }
+                else if (resMoms6 == Math.Truncate(Convert.ToDouble(item)))
+                {
+                    TotaltVärde.Add(max);
+                    TotalMoms.Add(resMoms25);
+                }
+            }
 
+        }
+        public static void PostDataToController(List<string> ListOfData)
+        {
+            eInvoice invoice = new eInvoice
+            {
+                InvoiceFee = double.Parse( ListOfData.FirstOrDefault()),
+
+
+            };
+            using (var httpClient = new HttpClient())
+            {
+               
+ 
+                 var str = new StringContent(JsonConvert.SerializeObject(invoice), Encoding.UTF8,"application/json");
+
+                httpClient.BaseAddress = new Uri("http://localhost:26695/");
+                var response = httpClient.PostAsync("/eInvoices/TestPost", str).Result;
+            }
         }
         public static List<string> getTheTotalAmount(List<String> WordList)   
         {
-            decimal number;
             int i;
             var lenght = WordList.Count();
             List<string> PengarLista = new List<string>();
