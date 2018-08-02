@@ -21,10 +21,8 @@ using Microsoft.ProjectOxford.Vision.Contract;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
-using Simplify.Windows.Forms;
-using System.Windows.Forms.RibbonHelpers;
 using System.Threading;
-
+using System.Net;
 
 namespace WebApplication1
 {
@@ -231,18 +229,22 @@ namespace WebApplication1
                     Program.count++;
                     await Program.ExtraktAndGetImages(Pdf, NrOfPages);
                 }
-               
+                eInvoice invoice = new eInvoice
+                {
+                };
+                var images = PdfImageExtractor.PageContainsImages(Pdf, NrOfPages);
                 var cashList = getTheTotalAmount(Program.CombineList);
-                PostDataToController(cashList);
-                getTheMaxValueAndCalculateMons(cashList);
-                GetMons(Program.CombineList);
-                GetOrgNumber(Program.CombineList);
-                SearchList("Förfallodatum:", Program.CombineList);
-                Program.DeleteFile(Program.FilePhth);
+                
+                getTheMaxValueAndCalculateMons(cashList , invoice);
+                GetMons(Program.CombineList , invoice);
+                GetOrgNumber(Program.CombineList , invoice);
+                SearchList( Program.CombineList , invoice);
+                await PostModelToController(invoice);
+                //Program.DeleteFile(Program.FilePhth);
                   
                 
                 
-                var images = PdfImageExtractor.PageContainsImages(Pdf, NrOfPages);
+                
 
                 return  result;
             }
@@ -281,7 +283,7 @@ namespace WebApplication1
             ReadToObject(j);
             return j;
         }
-        public static void SearchList(string SearchString, List<string> WordList)
+        public static void SearchList(List<string> WordList , eInvoice invoice)
         {
             
                 var lenght = WordList.Count;
@@ -303,6 +305,7 @@ namespace WebApplication1
                             DateList.Add(WordList[i]);
                         }
                     }
+                   
                     //Kollar längden på nummren och plockaq ut längden på ocr-nummret
                     foreach (Match match in rgx2.Matches(WordList[i]))
                     {
@@ -347,8 +350,43 @@ namespace WebApplication1
                     }
 
                  }
+                //jämför datum älsta är när fakturan ska betalas och tidigaste är fakturadatum
+            var dateListLenght = DateList.Count();
+            DateTime lastDate;
+            for (i = 0; i < dateListLenght; i++)
+            {
+                j = i + 1;
+                if(j > dateListLenght)
+                {
+                    j = dateListLenght;
+                }
+                int result = DateTime.Compare( DateTime.Parse( DateList[i]), DateTime.Parse(DateList[j]));
+
+                //is earlier than
+                if (result < 0)
+                {
+                    invoice.DueDate = DateTime.Parse(DateList[j]);
+                    invoice.InvoiceDate = DateTime.Parse(DateList[i]);
+                    break;
+                }
+                //is the same time as
+                else if (result == 0)
+                {
+                    lastDate = DateTime.Parse(DateList[j]);
+                }
+                //is later than
+                else
+                {
+                    
+                    invoice.DueDate = DateTime.Parse(DateList[i]) ;
+                    invoice.InvoiceDate = DateTime.Parse(DateList[j]);
+                    break;
+                }
+                    
+            }
+               
         }
-        public static void GetMons(List<string> WordList)
+        public static void GetMons(List<string> WordList , eInvoice invoice)
         {
         int i;
         var lenght = WordList.Count();
@@ -374,7 +412,7 @@ namespace WebApplication1
             
         }
         //kollar om moms o max värdet stämmer om det är så skicka till db
-        public static void getTheMaxValueAndCalculateMons(List<String> MoneyList)
+        public static void getTheMaxValueAndCalculateMons(List<String> MoneyList, eInvoice eInvoice)
         {
             List<string> TotaltVärde = new List<string>();
             List<double> TotalMoms = new List<double>();
@@ -397,38 +435,45 @@ namespace WebApplication1
                 {
                     TotaltVärde.Add(max);
                     TotalMoms.Add(resMoms25);
+                    eInvoice.InvoiceFee = Convert.ToDouble(max);
+                    eInvoice.VatAmount = Convert.ToDouble(resMoms25);
                 }
                 else if(resMoms12 == Math.Truncate(Convert.ToDouble(item)))
                 {
                     TotaltVärde.Add(max);
                     TotalMoms.Add(resMoms25);
+                    eInvoice.InvoiceFee = Convert.ToDouble(max);
+                    eInvoice.VatAmount = Convert.ToDouble(resMoms12);
                 }
                 else if (resMoms6 == Math.Truncate(Convert.ToDouble(item)))
                 {
                     TotaltVärde.Add(max);
                     TotalMoms.Add(resMoms25);
+                    eInvoice.InvoiceFee = Convert.ToDouble(max);
+                    eInvoice.VatAmount = Convert.ToDouble(resMoms6);
                 }
             }
 
         }
-        public static void PostDataToController(List<string> ListOfData)
+        public static void createANewModel()
         {
-            eInvoice invoice = new eInvoice
-            {
-                InvoiceFee = double.Parse( ListOfData.FirstOrDefault()),
-
-
-            };
+            
+        }
+        public static void addToModel(eInvoice eInvoice)
+        {
+            
+        }
+        public static async Task PostModelToController(eInvoice ListOfData)
+        {
+            var jsonString = await Task.Run(() => JsonConvert.SerializeObject(ListOfData, Formatting.Indented));
+            var str = new StringContent(jsonString , Encoding.UTF8 , "application/json");
             using (var httpClient = new HttpClient())
             {
-               
- 
-                 var str = new StringContent(JsonConvert.SerializeObject(invoice), Encoding.UTF8,"application/json");
-
                 httpClient.BaseAddress = new Uri("http://localhost:26695/");
-                var response = httpClient.PostAsync("/eInvoices/TestPost", str).Result;
+                await httpClient.PostAsync("/eInvoices/TestPost", str);
             }
         }
+       
         public static List<string> getTheTotalAmount(List<String> WordList)   
         {
             int i;
@@ -509,7 +554,7 @@ namespace WebApplication1
 
             return PengarLista;
         }
-        public static void GetOrgNumber(List<string> WordList)
+        public static void GetOrgNumber(List<string> WordList , eInvoice invoice)
         {
             int i;
             var lenght = WordList.Count();
@@ -528,6 +573,7 @@ namespace WebApplication1
                         if (true == checkIfItIsAOrgNr(WordList[i]))
                         {
                             OrgNrList.Add(WordList[i]);
+                            invoice.OrgNo = WordList[i];
                         }
                     }
                 }
@@ -538,6 +584,7 @@ namespace WebApplication1
                         if (true == checkIfItIsAOrgNr(WordList[i]))
                         {
                             OrgNrList.Add(WordList[i]);
+                            invoice.OrgNo = WordList[i];
                         }
                     }
                 }

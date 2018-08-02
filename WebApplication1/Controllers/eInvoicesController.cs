@@ -19,12 +19,11 @@ namespace WebApplication1.Controllers
             _context = context;
         }
         [HttpPost]
-        public ActionResult TestPost(string ListOfData)
+        public  IActionResult TestPost([FromBody]eInvoice invoice)
         {
-            
-            return View(ListOfData);
-            //var result = value;
-            //return Content("hello");
+           
+            return View(invoice);
+          
         }
         // GET: eInvoices
         public async Task<IActionResult> Index()
