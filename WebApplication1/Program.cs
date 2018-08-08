@@ -23,6 +23,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using System.Threading;
 using System.Net;
+using Newtonsoft.Json.Converters;
+using System.Globalization;
+using SweIdNum;
+using SweIdNum.Core;
+
 
 namespace WebApplication1
 {
@@ -61,27 +66,60 @@ namespace WebApplication1
         }
         public static string FilePhth;
         public static List<string> CombineList;
-
+        public static List<string> PdfList;
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .Build();
         public static string ReadFiles()
         {
-            string PdfPath = @"C:\Pdf";
-            foreach (string file in Directory.EnumerateFiles(PdfPath, "*.pdf"))
+            if (Program.FilePhth != null)
             {
-                Program.FilePhth = file;
-                return file;
-              
-                
+                MovePdf(Program.FilePhth);
             }
+            if(Program.count > 1)
+            {
+                Program.count = 1;
+            }
+            if (CombineList != null)
+            {
+                CombineList.Clear();
+            }
+            string PdfPath = @"C:\Pdf";
+            PdfList = Directory.GetFiles(PdfPath, "*.pdf").ToList();
+            
+                foreach (string file in PdfList)
+                {
+                    if (Program.FilePhth != file)
+                    {
+                        Program.FilePhth = file;
+                        return file;
+                    }
+
+                }
             return null;
         }
+        //flytta filer
+        public static void MovePdf(string filephth)
+        {
+            int i = 0;
+            
+            string sourceFile = filephth;
+            string destinationFile = @"C:\AvlästaPdf\avläst.pdf";
+
+            // To move a file or folder to a new location:
+            System.IO.File.Move(sourceFile, destinationFile);
+
+            // To move an entire directory. To programmatically modify or combine
+            // path strings, use the System.IO.Path class.
+            //System.IO.Directory.Move(@"C:\Users\Public\public\test\", @"C:\Users\Public\private");
+        }
+        
         public static List<string> ReadImages()
         {
+            var pages = Program.NumberOfPagesPdf(Program.FilePhth);
             List<string> ImageList = new List<string>();
-            string ImagePath = @"C:\Images";
+            string ImagePath = @"C:\Images\"+pages+"\\";
             foreach (string file in Directory.EnumerateFiles(ImagePath, "*.jpg"))
             {
                 ImageList.Add(file);
@@ -208,10 +246,13 @@ namespace WebApplication1
 
                 // Display the JSON response.
                 List<string> WordList = new List<string>();
+                //ränsar ut gammal ord
+                WordList.Clear();
                 List<string> CombineWordList = new List<string>();
+                CombineWordList.Clear();
                 var OrResult = JsonConvert.DeserializeObject<OcrResults>(contentString);
-                string Pdf = Program.ReadFiles();
-                int NrOfPages = Program.NumberOfPagesPdf(Pdf);
+               // string Pdf = Program.ReadFiles();
+                int NrOfPages = Program.NumberOfPagesPdf(Program.FilePhth);
                 var result = StringBilders(OrResult);
 
                 if (Program.CombineList != null)
@@ -227,18 +268,18 @@ namespace WebApplication1
                 {
                    
                     Program.count++;
-                    await Program.ExtraktAndGetImages(Pdf, NrOfPages);
+                    await Program.ExtraktAndGetImages(Program.FilePhth, NrOfPages);
                 }
                 eInvoice invoice = new eInvoice
                 {
                 };
-                var images = PdfImageExtractor.PageContainsImages(Pdf, NrOfPages);
+                var images = PdfImageExtractor.PageContainsImages(Program.FilePhth, NrOfPages);
                 var cashList = getTheTotalAmount(Program.CombineList);
                 
                 getTheMaxValueAndCalculateMons(cashList , invoice);
                 GetMons(Program.CombineList , invoice);
                 GetOrgNumber(Program.CombineList , invoice);
-                SearchList( Program.CombineList , invoice);
+                AddingDateAndOrcNr( Program.CombineList , invoice);
                 await PostModelToController(invoice);
                 //Program.DeleteFile(Program.FilePhth);
                   
@@ -283,7 +324,7 @@ namespace WebApplication1
             ReadToObject(j);
             return j;
         }
-        public static void SearchList(List<string> WordList , eInvoice invoice)
+        public static void AddingDateAndOrcNr(List<string> WordList , eInvoice invoice)
         {
             
                 var lenght = WordList.Count;
@@ -321,6 +362,7 @@ namespace WebApplication1
                                     if((int)Char.GetNumericValue(nr[g]) == (WordList[i].Length-1) && (int)Char.GetNumericValue(nr[g]) == WordList[i].Length)
                                     {
                                         OrcList.Add(WordList[i]);
+                                        invoice.Ocr = WordList[i];
                                         break;
                                     }
                                   
@@ -341,6 +383,7 @@ namespace WebApplication1
                                     {
                                         OrcList.Add(WordList[i]);
                                         g = WordList[i].Length;
+                                        invoice.Ocr = WordList[i];
                                         break;
                                     }
 
@@ -352,6 +395,8 @@ namespace WebApplication1
                  }
                 //jämför datum älsta är när fakturan ska betalas och tidigaste är fakturadatum
             var dateListLenght = DateList.Count();
+
+            
             DateTime lastDate;
             for (i = 0; i < dateListLenght; i++)
             {
@@ -365,8 +410,9 @@ namespace WebApplication1
                 //is earlier than
                 if (result < 0)
                 {
-                    invoice.DueDate = DateTime.Parse(DateList[j]);
-                    invoice.InvoiceDate = DateTime.Parse(DateList[i]);
+                    invoice.DueD = DateTime.Parse(DateList[j]).ToString();
+                    invoice.InvoiceD = DateTime.Parse(DateList[i]).ToString();
+                    
                     break;
                 }
                 //is the same time as
@@ -377,9 +423,21 @@ namespace WebApplication1
                 //is later than
                 else
                 {
-                    
-                    invoice.DueDate = DateTime.Parse(DateList[i]) ;
-                    invoice.InvoiceDate = DateTime.Parse(DateList[j]);
+
+                    invoice.DueD = DateTime.Parse(DateList[i]).ToString();
+                    invoice.InvoiceD = DateTime.Parse(DateList[j]).ToString();
+                    //var date = DateTime.Parse(DateList[i]);
+                    //var dateOnly = date.Date;
+                    //var lastDate1 = DateTime.ParseExact(DateList[i], "yyyy-MM-dd", null);
+                    //var FirstDate = DateTime.ParseExact(DateList[j], "yyyy-MM-dd", null);
+                    //string json1 = JsonConvert.SerializeObject(dateOnly.Date);
+                    //string json2 = JsonConvert.SerializeObject(FirstDate.Date);
+                    //string json1 = lastDate1.ToUniversalTime().ToString("s") + "Z";
+                    //string json2 = FirstDate.ToUniversalTime().ToString("s") + "Z";
+                    //invoice.DueDate = DateTime.Parse(json1);
+                    //invoice.InvoiceDate = DateTime.Parse(json2);
+
+
                     break;
                 }
                     
@@ -419,38 +477,45 @@ namespace WebApplication1
             double MomsTjugoFem = 1.25;
             double MomsTolv = 1.12;
             double MomsSex = 1.06;
-            var max = MoneyList.OrderByDescending(v => Decimal.Parse(v)).FirstOrDefault();
+            double max = Convert.ToDouble(MoneyList.OrderByDescending(v => Decimal.Parse(v)).FirstOrDefault());
+            //Öres utjämning
+            //var deci = max - Math.Truncate(max);
+            //if (deci >= 0.5)
+            //{
+            //    max++;
+            //}
+
             //25 Moms beräkning
-            var sum = double.Parse(max) / MomsTjugoFem;
-            var resMoms25 = double.Parse(max) - sum;
+            var sum = max / MomsTjugoFem;
+            var resMoms25 = max - sum;
             //12 Moms beräkning
-            var sum2 = double.Parse(max) / MomsTolv;
-            var resMoms12 = double.Parse(max) - sum2;
+            var sum2 = max / MomsTolv;
+            var resMoms12 = max - sum2;
             //6 Moms beräkning
-            var sum3 = double.Parse(max) / MomsSex;
-            var resMoms6 = double.Parse(max) - sum3;
+            var sum3 = max / MomsSex;
+            var resMoms6 = max - sum3;
             foreach (var item in MoneyList)
             {
-                if(resMoms25 == Math.Truncate( Convert.ToDouble(item)))
+                if(Math.Truncate(resMoms25) == Math.Truncate( Convert.ToDouble(item)))
                 {
-                    TotaltVärde.Add(max);
-                    TotalMoms.Add(resMoms25);
-                    eInvoice.InvoiceFee = Convert.ToDouble(max);
-                    eInvoice.VatAmount = Convert.ToDouble(resMoms25);
+                    TotaltVärde.Add(max.ToString());
+                    TotalMoms.Add(Math.Truncate(resMoms25));
+                    eInvoice.Amount = max;
+                    eInvoice.VatAmount = Math.Truncate(resMoms25);
                 }
-                else if(resMoms12 == Math.Truncate(Convert.ToDouble(item)))
+                else if(Math.Truncate(resMoms12) == Math.Truncate(Convert.ToDouble(item)))
                 {
-                    TotaltVärde.Add(max);
+                    TotaltVärde.Add(max.ToString());
                     TotalMoms.Add(resMoms25);
-                    eInvoice.InvoiceFee = Convert.ToDouble(max);
-                    eInvoice.VatAmount = Convert.ToDouble(resMoms12);
+                    eInvoice.Amount = max;
+                    eInvoice.VatAmount = Math.Truncate(resMoms12);
                 }
-                else if (resMoms6 == Math.Truncate(Convert.ToDouble(item)))
+                else if (Math.Truncate(resMoms6) == Math.Truncate(Convert.ToDouble(item)))
                 {
-                    TotaltVärde.Add(max);
+                    TotaltVärde.Add(max.ToString());
                     TotalMoms.Add(resMoms25);
-                    eInvoice.InvoiceFee = Convert.ToDouble(max);
-                    eInvoice.VatAmount = Convert.ToDouble(resMoms6);
+                    eInvoice.Amount = max;
+                    eInvoice.VatAmount = Math.Truncate(resMoms6);
                 }
             }
 
@@ -465,10 +530,17 @@ namespace WebApplication1
         }
         public static async Task PostModelToController(eInvoice ListOfData)
         {
-            var jsonString = await Task.Run(() => JsonConvert.SerializeObject(ListOfData, Formatting.Indented));
+            //IsoDateTimeConverter iso = new IsoDateTimeConverter(){ DateTimeFormat = "yyyy-MM-dd HH:mm:ss" };
+            //JsonSerializerSettings microsoftDateFormatSettings = new JsonSerializerSettings
+            //{
+            //    DateFormatHandling = DateFormatHandling.MicrosoftDateFormat
+            //};
+            var jsonString = await Task.Run(() => JsonConvert.SerializeObject(ListOfData, Formatting.None, new JavaScriptDateTimeConverter()));
+            //string javascriptJson = JsonConvert.SerializeObject(jsonString);
             var str = new StringContent(jsonString , Encoding.UTF8 , "application/json");
             using (var httpClient = new HttpClient())
             {
+                httpClient.Timeout = TimeSpan.FromMinutes(30);
                 httpClient.BaseAddress = new Uri("http://localhost:26695/");
                 await httpClient.PostAsync("/eInvoices/TestPost", str);
             }
@@ -496,53 +568,69 @@ namespace WebApplication1
                             bool containsNum = Regex.IsMatch(match.Value, @"^(^\d{3})+(,\d{1,2})$");
                             if (containsNum)
                             {
-                               
-                           
-                                //kollar om föregående talet i listan innehåller 1-3 siffror
-                                foreach (Match match2 in rgx2.Matches(WordList[i - 1]))
-                                {
-                                    if (match.Success == true)
-                                    {
 
-                                        var sum = match2.Value + match.Value;
-                                        bool containsNum2 = Regex.IsMatch(match2.Value, @"^(^\d{3})$");
-                                        if (containsNum2)
+                                bool containsNum1 = Regex.IsMatch(WordList[i - 1], @"^(^\d{1,3})$");
+                                if (containsNum1)
+                                {
+                                    //kollar om föregående talet i listan innehåller 1-3 siffror
+                                    foreach (Match match2 in rgx2.Matches(WordList[i - 1]))
+                                    {
+                                        if (match2.Success == true)
                                         {
-                                            //om nummret inehåller 3 siffror kolla om föregående tal är en match
-                                            foreach (Match match3 in rgx2.Matches(WordList[i - 2]))
+
+                                            var sum = match2.Value + match.Value;
+                                            bool containsNum2 = Regex.IsMatch(match2.Value, @"^(^\d{3})$");
+                                            if (containsNum2)
                                             {
-                                                if (match.Success == true)
+                                                //om nummret inehåller 3 siffror kolla om föregående tal är en match
+                                                foreach (Match match3 in rgx2.Matches(WordList[i - 2]))
                                                 {
-                                                    var sum1 = match3.Value + match2.Value + match.Value;
-                                                    bool containsNum3 = Regex.IsMatch(match3.Value, @"^(^\d{3})$");
-                                                    if (containsNum3)
+                                                    if (match3.Success == true)
                                                     {
-                                                        foreach (Match match4 in rgx2.Matches(WordList[i - 3]))
+                                                        var sum1 = match3.Value + match2.Value + match.Value;
+                                                        bool containsNum3 = Regex.IsMatch(match3.Value, @"^(^\d{3})$");
+                                                        if (containsNum3)
                                                         {
-                                                            if (match.Success == true)
+                                                            foreach (Match match4 in rgx2.Matches(WordList[i - 3]))
                                                             {
-                                                                var sum2 = match4.Value + match3.Value + match2.Value + match.Value;
-                                                                PengarLista.Add(sum2);
-                                                                break;
+                                                                if (match.Success == true)
+                                                                {
+                                                                    var sum2 = match4.Value + match3.Value + match2.Value + match.Value;
+                                                                    PengarLista.Add(sum2);
+                                                                    break;
+                                                                }
                                                             }
                                                         }
-                                                    }
-                                                    else
-                                                    {
-                                                        PengarLista.Add(sum1);
-                                                        break;
+                                                        else
+                                                        {
+                                                            PengarLista.Add(sum1);
+                                                            break;
+                                                        }
                                                     }
                                                 }
+                                            }
+                                            else
+                                            {
+                                                PengarLista.Add(sum);
+                                                break;
                                             }
                                         }
                                         else
                                         {
-                                            PengarLista.Add(sum);
+                                            PengarLista.Add(match2.Value);
                                             break;
                                         }
+
+
                                     }
                                 }
-                            }
+                                else
+                                {
+                                    PengarLista.Add(match.Value);
+                                    break;
+                                }
+
+                        }
                             else
                             {
                                 PengarLista.Add(match.Value);
@@ -566,6 +654,7 @@ namespace WebApplication1
 
             for (i = 0; i < lenght; i++)
             {
+                
                 foreach (Match match in rgx.Matches(WordList[i]) )
                 {
                     if (match.Success == true)
@@ -581,6 +670,7 @@ namespace WebApplication1
                 {
                     if (match.Success == true)
                     {
+
                         if (true == checkIfItIsAOrgNr(WordList[i]))
                         {
                             OrgNrList.Add(WordList[i]);
@@ -591,34 +681,62 @@ namespace WebApplication1
 
             }
         }
+        //kollar om nummret är ett orgnr
         public static bool checkIfItIsAOrgNr(string data)
         {
-            int sum = 0;
-            bool odd = true;
+            List<int> sum = new List<int>();
+            int tSum = 0;
             string numericOrg = new String(data.Where(Char.IsDigit).ToArray());
-            for (int i = numericOrg.Length - 1; i >= 0; i--)
+            for (int i = 0 ; i < numericOrg.Length; i++)
             {
-                if (odd == true)
+                //om talet är jämt
+                if(i%2 == 0)
                 {
-                    int tSum = Convert.ToInt32(numericOrg[i].ToString()) * 2;
-                    if (tSum >= 10)
-                    {
-                        string tData = tSum.ToString();
-                        tSum = Convert.ToInt32(tData[0].ToString()) + Convert.ToInt32(tData[1].ToString());
-                    }
-                    sum += tSum;
+                     sum.Add( Convert.ToInt32(numericOrg[i].ToString()) * 2);
+                }
+                //eller udda
+                else
+                {
+                    sum.Add( Convert.ToInt32(numericOrg[i].ToString()) * 1);
+                }
+                
+            }
+            
+            foreach (var item in sum)
+            {
+                if (item >= 10)
+                {
+                    string tData = item.ToString();
+                    tSum += Convert.ToInt32(tData[0].ToString()) + Convert.ToInt32(tData[1].ToString());
                 }
                 else
-                    sum += Convert.ToInt32(numericOrg[i].ToString());
-                odd = !odd;
+                {
+                    tSum += Convert.ToInt32(item);
+                }
             }
-            if (sum % 10 == 0)
+            int controlNr = 0;
+            var stringtSum = tSum.ToString();
+            //var shar1 = Convert.ToInt32(stringtSum[0].ToString());
+            //var shar2 = Convert.ToInt32(stringtSum[1].ToString());
+            //if (shar2 < 0)
+            //{
+            //    shar1++;
+            //    shar1 *= 10;
+            //    controlNr = shar1 - tSum;
+            //}
+            //else
+            //{
+            //    shar1 *= 10;
+            //    controlNr = shar1 - tSum;
+            //}
+            //om det är delbart med 10 så är det ett org nr
+            if (tSum % 10 == 0)
             {
                 return true;
             }
             else
             {
-                return false; 
+                return false;
             }
         }
         public static List<string> AddWordsToList(OcrResults results)

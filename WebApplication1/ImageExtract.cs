@@ -4,13 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
-using System.IO;
+using System.IO.IsolatedStorage;
 using System.Drawing.Drawing2D;
 using System.Drawing;
 using System.Text;
 using System.Drawing.Imaging;
 using System.Reflection;
 using System.Threading;
+using System.IO;
 
 namespace WebApplication1
 {
@@ -194,12 +195,20 @@ namespace WebApplication1
             /* Rather than struggle with the image stream and try to figure out how to handle 
              * BitMapData scan lines in various formats (like virtually every sample I've found 
              * online), use the PdfImageObject.GetDrawingImage() method, which does the work for us. */
-            
+
+                    var pages = Program.NumberOfPagesPdf(Program.FilePhth);
                     this.Images.Add(drawingImage, extension);
-                    string name = @"C:\Images\"+image.Get(PdfName.NAME).ToString()+".JPG";
-                    byte[] byteArray = Encoding.UTF8.GetBytes(name);
+                    string filename = @"C:\Images\" + pages + "\\"; 
+                    bool exists = System.IO.Directory.Exists(filename);
+
+                    if (!exists)
+                    {
+                        System.IO.Directory.CreateDirectory(filename);
+                    }
+                    string fullName = filename + image.Get(PdfName.NAME).ToString() + ".JPG";
+                    byte[] byteArray = Encoding.UTF8.GetBytes(fullName);
                     MemoryStream stream = new MemoryStream(byteArray);
-                    drawingImage.Save(name, ImageFormat.Gif);
+                    drawingImage.Save(fullName, ImageFormat.Gif);
                     //var JasonReturn= BildLäs.Main2(name);
 
                     

@@ -34,11 +34,11 @@ namespace WebApplication1.Models
 
             private double amountField;
 
-            private DateTime invoiceDateField;
+            private string invoiceDateField;
 
             private bool invoiceDateFieldSpecified;
 
-            private DateTime dueDateField;
+            private string dueDateField;
 
             private bool dueDateFieldSpecified;
 
@@ -96,6 +96,7 @@ namespace WebApplication1.Models
 
             private string projectField;
 
+
             public eInvoice()
             {
                 //base.New;
@@ -124,6 +125,9 @@ namespace WebApplication1.Models
                 this.vatField = 0;
                 this.invoiceFeeField = 0;
                 this.projectField = "";
+  
+                
+                
             }
 
             // ''<remarks/>
@@ -178,7 +182,7 @@ namespace WebApplication1.Models
                 }
             }
 
-            public DateTime InvoiceDate
+            public string InvoiceD
             {
                 get
                 {
@@ -203,7 +207,7 @@ namespace WebApplication1.Models
                 }
             }
 
-            public DateTime DueDate
+            public string DueD
             {
                 get
                 {

@@ -19,10 +19,14 @@ namespace WebApplication1.Controllers
             _context = context;
         }
         [HttpPost]
-        public  IActionResult TestPost([FromBody]eInvoice invoice)
+        public async Task<IActionResult> TestPost([FromBody][Bind("eInvoiceId,CurrencyCode,PurchOrderNo,PayType,Amount,InvoiceDate,InvoiceDateSpecified,DueDate,DueDateSpecified,VatAmount,Authorizor,OurCustomerNo,InvoiceType,Supplier,SupplierNo,InvoiceNo,Ocr,Freight,FreightSpecified,VatCode,Pg,Bg,OrgNo,OurReference,YourReference,InvoiceRecipient,Address,PostCode,City,Message,Vat,InvoiceFee,Project")]eInvoice invoice)
         {
-           
-            return View(invoice);
+            _context.Add(invoice);
+            await _context.SaveChangesAsync();
+            var pdf = Program.ReadFiles();
+            int NrOfPages = Program.NumberOfPagesPdf(pdf);
+            await Program.ExtraktAndGetImages(pdf, NrOfPages);
+            return View();
           
         }
         // GET: eInvoices
@@ -76,7 +80,7 @@ namespace WebApplication1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("eInvoiceId,CurrencyCode,PurchOrderNo,PayType,Amount,InvoiceDate,InvoiceDateSpecified,DueDate,DueDateSpecified,VatAmount,Authorizor,OurCustomerNo,InvoiceType,Supplier,SupplierNo,InvoiceNo,Ocr,Freight,FreightSpecified,VatCode,Pg,Bg,OrgNo,OurReference,YourReference,InvoiceRecipient,Address,PostCode,City,Message,Vat,InvoiceFee,Project")] eInvoice eInvoice)
+        public async Task<IActionResult> Create([Bind("eInvoiceId,CurrencyCode,PurchOrderNo,PayType,Amount,InvoiceD,InvoiceDateSpecified,DueD,DueDateSpecified,VatAmount,Authorizor,OurCustomerNo,InvoiceType,Supplier,SupplierNo,InvoiceNo,Ocr,Freight,FreightSpecified,VatCode,Pg,Bg,OrgNo,OurReference,YourReference,InvoiceRecipient,Address,PostCode,City,Message,Vat,InvoiceFee,Project")] eInvoice eInvoice)
         {
             if (ModelState.IsValid)
             {
