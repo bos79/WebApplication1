@@ -41,7 +41,7 @@ namespace WebApplication1
             CurrentFilename = filename;
             using (var reader = new PdfReader(filename))
             {
-
+                
                 var parser = new PdfReaderContentParser(reader);
                 ImageRenderListener listener = null;
 
@@ -60,24 +60,42 @@ namespace WebApplication1
 
                 using (var reader = new PdfReader(filename))
                 {
+                    List<string> textList = new List<string>();
+                    StringBuilder sb = new StringBuilder();
                     var parser = new PdfReaderContentParser(reader);
                     ImageRenderListener listener = null;
-
+                    ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                    //läser in texten på en pdf
                     for (var i = 1; i <= reader.NumberOfPages; i++)
                     {
-                        parser.ProcessContent(i, (listener = new ImageRenderListener()));
-                        var index = 1;
-
+                         parser.ProcessContent(i, (listener = new ImageRenderListener()));
+                         var text = PdfTextExtractor.GetTextFromPage(reader, i , strategy);
+                         if (!string.IsNullOrWhiteSpace(text))
+                         {
+                              string[] lines = text.Split('\n',' ');
+                              foreach (string line in lines)
+                              {
+                                    if (line != "")
+                                    {
+                                         textList.Add(line);
+                                    }
+                                   
+                                 
+                              }
+                         }
+                         Program.addCombineLists(textList);
+                         var index = 1;
+ 
                         if (listener.Images.Count > 0)
                         {
-                            Console.WriteLine("Found {0} images on page {1}.", listener.Images.Count, i);
+                                Console.WriteLine("Found {0} images on page {1}.", listener.Images.Count, i);
 
-                            foreach (var pair in listener.Images)
-                            {
-                                images.Add(string.Format("{0}_Page_{1}_Image_{2}{3}",
-                                    System.IO.Path.GetFileNameWithoutExtension(filename), i.ToString("D4"), index.ToString("D4"), pair.Value), pair.Key);
-                                index++;
-                            }
+                                foreach (var pair in listener.Images)
+                                {
+                                    images.Add(string.Format("{0}_Page_{1}_Image_{2}.{3}",
+                                        System.IO.Path.GetFileNameWithoutExtension(filename), i.ToString("D4"), index.ToString("D4"), pair.Value), pair.Key);
+                                    index++;
+                                }
                         }
                     }
                  
@@ -145,9 +163,11 @@ namespace WebApplication1
 
             public void EndTextBlock() { }
 
+            public static int increment = 0;
             public void RenderImage(ImageRenderInfo renderInfo)
             {
                 PdfImageObject image = renderInfo.GetImage();
+                
             
                 var v = PdfName.FILTER;
                 
@@ -195,29 +215,42 @@ namespace WebApplication1
             /* Rather than struggle with the image stream and try to figure out how to handle 
              * BitMapData scan lines in various formats (like virtually every sample I've found 
              * online), use the PdfImageObject.GetDrawingImage() method, which does the work for us. */
+            try
+            {
 
-                    var pages = Program.NumberOfPagesPdf(Program.FilePhth);
-                    this.Images.Add(drawingImage, extension);
-                    string filename = @"C:\Images\" + pages + "\\"; 
-                    bool exists = System.IO.Directory.Exists(filename);
-
-                    if (!exists)
-                    {
-                        System.IO.Directory.CreateDirectory(filename);
-                    }
-                    string fullName = filename + image.Get(PdfName.NAME).ToString() + ".JPG";
-                    byte[] byteArray = Encoding.UTF8.GetBytes(fullName);
+                var pages = Program.NumberOfPagesPdf(Program.FilePhth);
+                this.Images.Add(drawingImage, extension);
+                string filename = @"C:\Images\" + pages + "\\";
+                bool exists = System.IO.Directory.Exists(filename);
+                increment++;
+                if (!exists)
+                {
+                    System.IO.Directory.CreateDirectory(filename);
+                }
+                //string fullName = filename + image.Get(PdfName.NAME).ToString() + increment + ".JPG";
+                if (increment <= pages)
+                {
+                    string fullName2 = filename + "im" + increment + ".JPG";
+                    byte[] byteArray = Encoding.UTF8.GetBytes(fullName2);
                     MemoryStream stream = new MemoryStream(byteArray);
-                    drawingImage.Save(fullName, ImageFormat.Gif);
+                    drawingImage.Save(fullName2, ImageFormat.Gif);
                     //var JasonReturn= BildLäs.Main2(name);
-
+                }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(e);
+            }
                     
             //}
         }
 
 
-
-        public void RenderText(TextRenderInfo renderInfo) { }
+        List<string> textlist = new List<string>();
+        public void RenderText(TextRenderInfo renderInfo)
+        {
+        
+        }
 
             #endregion Public Methods
 

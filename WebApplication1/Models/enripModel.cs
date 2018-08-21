@@ -96,6 +96,10 @@ namespace WebApplication1.Models
 
             private string projectField;
 
+            private string pdfPath;
+
+
+
 
             public eInvoice()
             {
@@ -125,6 +129,7 @@ namespace WebApplication1.Models
                 this.vatField = 0;
                 this.invoiceFeeField = 0;
                 this.projectField = "";
+                this.pdfPath = "";
   
                 
                 
@@ -576,7 +581,20 @@ namespace WebApplication1.Models
                     this.projectField = value;
                 }
             }
-        }
+
+            [System.ComponentModel.DefaultValueAttribute("")]
+            public string pdfPaths
+            {
+                get
+                {
+                    return this.pdfPath;
+                }
+                set
+                {
+                    this.pdfPath = value;
+                }
+            }
+    }
         // ''<remarks/>
         //<System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "2.0.50727.42");
         //,System.SerializableAttribute();

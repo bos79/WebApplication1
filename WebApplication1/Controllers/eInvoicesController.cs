@@ -19,7 +19,7 @@ namespace WebApplication1.Controllers
             _context = context;
         }
         [HttpPost]
-        public async Task<IActionResult> TestPost([FromBody][Bind("eInvoiceId,CurrencyCode,PurchOrderNo,PayType,Amount,InvoiceDate,InvoiceDateSpecified,DueDate,DueDateSpecified,VatAmount,Authorizor,OurCustomerNo,InvoiceType,Supplier,SupplierNo,InvoiceNo,Ocr,Freight,FreightSpecified,VatCode,Pg,Bg,OrgNo,OurReference,YourReference,InvoiceRecipient,Address,PostCode,City,Message,Vat,InvoiceFee,Project")]eInvoice invoice)
+        public async Task<IActionResult> TestPost([FromBody][Bind("eInvoiceId,CurrencyCode,PurchOrderNo,PayType,Amount,InvoiceDate,InvoiceDateSpecified,DueDate,DueDateSpecified,VatAmount,Authorizor,OurCustomerNo,InvoiceType,Supplier,SupplierNo,InvoiceNo,Ocr,Freight,FreightSpecified,VatCode,Pg,Bg,OrgNo,OurReference,YourReference,InvoiceRecipient,Address,PostCode,City,Message,Vat,InvoiceFee,Project,pdfPath")]eInvoice invoice)
         {
             _context.Add(invoice);
             await _context.SaveChangesAsync();
