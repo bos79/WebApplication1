@@ -25,47 +25,50 @@ using System.Threading;
 using System.Net;
 using Newtonsoft.Json.Converters;
 using System.Globalization;
-
+using System.Diagnostics;
 
 namespace WebApplication1
 {
     public class Program
     {
-        
+        public static eInvoice invoice = new eInvoice();
         public static int count = 1;
+        public static string pdfName;
+        public static bool websiteRunsWhenFalse = true;
         public static void Main(string[] args)
         {
-
-           
-            string Pdf = ReadFiles();
-            int NrOfPages = NumberOfPagesPdf(Pdf);
-            try
+            pdfName = ReadFiles();
+            if (websiteRunsWhenFalse != false)
             {
-             var v =  ExtraktAndGetImages(Pdf, NrOfPages);
+                
+                int NrOfPages = NumberOfPagesPdf(pdfName);
+                try
+                {
+                    var v = ExtraktAndGetImages(pdfName, NrOfPages);
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine(e);
+                }
             }
-            catch(IOException e)
-            {
-                Console.WriteLine(e);
-            }
-            
 
             BuildWebHost(args).Run();
 
 
 
         }
-        public static async Task ExtraktAndGetImages (string Pdf, int NrOfPages)
+        public static async Task ExtraktAndGetImages(string Pdf, int NrOfPages)
         {
 
             if (PdfImageExtractor.PageContainsImages(Pdf, NrOfPages) == true)
             {
 
                 var image = PdfImageExtractor.ExtractImage(Pdf);
-                
-                
-                var Images = ReadImages();
+
+
+                var Images = ReadImages(invoice);
                 await BildLäs.Main2(Images.Where(m => m.Contains(Program.count.ToString())).FirstOrDefault());
-               
+
             }
         }
         public static string FilePhth;
@@ -75,9 +78,9 @@ namespace WebApplication1
 
         public static void addCombineLists(List<string> lista)
         {
-           
-               CombineList = lista.Concat(CombineList).ToList();
-           
+
+            CombineList = lista.Concat(CombineList).ToList();
+
         }
 
         public static List<string> PdfList;
@@ -87,9 +90,12 @@ namespace WebApplication1
                 .Build();
         public static string ReadFiles()
         {
+            Program.invoice = new eInvoice();
+            PdfImageExtractor.increment = 0;
+            string path = @"C:\AvlästaPdf\";
             if (Program.FilePhth != null)
             {
-                MovePdf(Program.FilePhth , FileName );
+                MovePdf(Program.FilePhth, path+FileName);
             }
             if (Program.count > 1)
             {
@@ -101,16 +107,20 @@ namespace WebApplication1
             }
             string PdfPath = @"C:\Pdf";
             PdfList = Directory.GetFiles(PdfPath, "*.pdf").ToList();
-            
-                foreach (string file in PdfList)
-                {
-                    if (Program.FilePhth != file)
-                    {
-                        Program.FilePhth = file;
-                        return file;
-                    }
+            if(PdfList.Count == 0)
+            {
+                websiteRunsWhenFalse = false;
+            }
 
+            foreach (string file in PdfList)
+            {
+                if (Program.FilePhth != file)
+                {
+                    Program.FilePhth = file;
+                    return file;
                 }
+
+            }
             return null;
         }
         // avlästa pdfer får ett nr
@@ -118,7 +128,7 @@ namespace WebApplication1
         public static string genereraPdfNamn()
         {
             i++;
-            
+
             string destinationFile = @"C:\AvlästaPdf\avläst" + i + ".pdf";
             bool exists = System.IO.File.Exists(destinationFile);
 
@@ -128,9 +138,10 @@ namespace WebApplication1
                 destinationFile = @"C:\AvlästaPdf\avläst" + i + ".pdf";
                 exists = System.IO.File.Exists(destinationFile);
             }
+            destinationFile= @"avläst" + i + ".pdf";
             return destinationFile;
         }
-        public static void SaveImage( string fileName)
+        public static void SaveImage(string fileName)
         {
             var pages = Program.NumberOfPagesPdf(Program.FilePhth);
             string filename = @"C:\Images\" + pages + "\\";
@@ -142,11 +153,11 @@ namespace WebApplication1
             string fullName = filename + fileName;
             System.IO.File.Create(fullName);
         }
-            //flytta filer
-            public static void MovePdf(string filephth , string fileName)
+        //flytta filer
+        public static void MovePdf(string filephth, string fileName)
         {
             const int NumberOfRetries = 20;
-            const int DelayOnRetry = 1000;
+            const int DelayOnRetry = 500;
 
             for (int i = 1; i <= NumberOfRetries; ++i)
             {
@@ -175,26 +186,49 @@ namespace WebApplication1
             {
                 count++;
             }
-           return count;
+            return count;
         }
-        
-        public static List<string> ReadImages()
+        public static List<string> ImageNameList = new List<string>();
+        //läser bilder och retunerar alla bilder
+        public static List<string> ReadImages( eInvoice eInvoices)
         {
             
             var pages = Program.NumberOfPagesPdf(Program.FilePhth);
             List<string> ImageList = new List<string>();
-            string ImagePath = @"C:\Images\"+pages+"\\";
-            foreach (string file in Directory.EnumerateFiles(ImagePath, "*.jpg"))
+            var allImages = new List<Images>();
+            string ImagePath = @"C:\Images\" + pages + "\\";
+            var imageList = Directory.GetFileSystemEntries(ImagePath, "*.jpg").ToList();
+            foreach(var file in imageList)
             {
                 ImageList.Add(file);
+ 
+                if (eInvoices.images1.Count == 0)
+                {
+                    Program.ImageNameList.Add(file.ToString());
+ 
+                }
+                else
+                {
+                    if (ImageNameList != null)
+                    {
+                        bool koll = ImageNameList.Any(stringToCheck => stringToCheck.Contains(file.ToString()));
+                        if (koll == false) 
+                        {
+                       
+                            ImageNameList.Add(file.ToString());
+                        }
+                    }
+                }
+ 
+                
             }
-         return ImageList;
+            return ImageList;
         }
         public static int NumberOfPagesPdf(string pdf)
         {
             PdfReader pdfreader = new PdfReader(pdf);
             return pdfreader.NumberOfPages;
-            
+
         }
         public static void DeleteFile(string pdf)
         {
@@ -218,7 +252,7 @@ namespace WebApplication1
             }
         }
     }
-   
+
 
 
     public class BildLäs
@@ -239,10 +273,10 @@ namespace WebApplication1
         public static async Task<String> Main2(String Pdf)
         {
 
-             
+
             // Get the path and filename to process from the user.
             //Optical Character Recognition;
-           
+
             string imageFilePath = Pdf;
 
             if (System.IO.File.Exists(imageFilePath))
@@ -304,9 +338,9 @@ namespace WebApplication1
                 }
 
                 // Get the JSON response.
-                string contentString = await   response.Content.ReadAsStringAsync();
+                string contentString = await response.Content.ReadAsStringAsync();
 
-                
+
                 List<string> WordList = new List<string>();
                 //ränsar ut gammal ord
                 WordList.Clear();
@@ -327,35 +361,42 @@ namespace WebApplication1
                 //om det finns flera pdf sidor så körs det om och sparar det andra i en templista
                 if (NrOfPages > Program.count)
                 {
-                   
+
                     Program.count++;
                     await Program.ExtraktAndGetImages(Program.FilePhth, NrOfPages);
                 }
-                eInvoice invoice = new eInvoice
+                //eInvoice invoice = new eInvoice
                 {
                 };
-              
+                //AddingTotalSum(Program.CombineList, Program.invoice);
                 var cashList = getTheTotalAmount(Program.CombineList);
-                Program.tempCashList = cashList.ToList();
-                AddingFakturaNr(Program.CombineList, invoice);
-                getTheMaxValueAndCalculateMons(cashList , invoice);
-                GetMons(Program.CombineList , invoice);
-                GetOrgNumber(Program.CombineList , invoice);
-                AddingDateAndOrcNr( Program.CombineList , invoice);
+                
+                AddingFakturaNr(Program.CombineList,Program.invoice);
+                if (cashList.Count != 0)
+                {
+                    Program.tempCashList = cashList.ToList();
+                    getTheMaxValueAndCalculateMons(cashList, Program.invoice);
+                }
+                GetMons(Program.CombineList, Program.invoice);
+                orgNrMatchning(Program.CombineList, Program.invoice);
+                GetOrgNumber(Program.CombineList, Program.invoice);
+                AddingDateAndOrcNr(Program.CombineList, Program.invoice);
                 Program.FileName = Program.genereraPdfNamn();
-                invoice.pdfPaths = Program.FileName;
-                await PostModelToController(invoice);
-                
-                  
-                
-                
-                
+                Program.invoice.pdfPaths = Program.FileName;
+                kollaAlltData(Program.invoice);
+                //await saveToDb(Program.invoice);
+                await PostModelToController(Program.invoice);
 
-                return  result;
+
+
+
+
+
+                return result;
             }
             catch (Exception e)
             {
-              
+
                 Console.WriteLine("\n" + e.Message);
                 return null;
             }
@@ -376,9 +417,9 @@ namespace WebApplication1
         }
         public static string ReturnJson(string j)
         {
-            
+
             // serialize JSON to a string and then write string to a file
-           System.IO.File.WriteAllText(@"C:\Users\ERIP\Downloads\JsonFile.json", j);
+            System.IO.File.WriteAllText(@"C:\Users\ERIP\Downloads\JsonFile.json", j);
 
             using (StreamWriter file = System.IO.File.CreateText(@"wwwroot\Ajax\JsonFile.txt"))
             {
@@ -395,209 +436,329 @@ namespace WebApplication1
             Regex rgx = new Regex(numbersPattern);
             for (int i = 0; i < lenght; i++)
             {
-                
-                if (WordList[i]=="Faktura" && WordList[i+1] == "nr:" ||  WordList[i] == "Faktura/Avi" && WordList[i++] == "nummer" || WordList[i] == "Fåktura" && WordList[i++] == "nr:")
+
+                if (WordList[i] == "Faktura" && WordList[i + 1] == "nr:" || WordList[i] == "Faktura/Avi" && WordList[i++] == "nummer" || WordList[i] == "Fåktura" && WordList[i++] == "nr:")
                 {
-                    foreach (Match match in rgx.Matches(WordList[i+2]))
+                    foreach (Match match in rgx.Matches(WordList[i + 2]))
                     {
                         if (match.Success == true)
                         {
                             invoice.InvoiceNo = WordList[i + 2];
+                            break;
                         }
                     }
                 }
-                if(WordList[i] == "Fakturanr" || WordList[i] == "Fakturanummer"|| WordList[i] == "Invoice")
+                if (WordList[i] == "Fakturanr" || WordList[i] == "Fakturanummer" || WordList[i] == "Invoice" || WordList[i] == "Fakturanummer/OCR")
                 {
-                    foreach (Match match in rgx.Matches(WordList[i+1]))
+                    foreach (Match match in rgx.Matches(WordList[i + 1]))
                     {
                         if (match.Success == true)
                         {
                             invoice.InvoiceNo = WordList[i + 1];
+                            break;
                         }
                     }
-                    
+
                 }
             }
-         }
-        public static DateTime InvoceDate;
-        public static DateTime DuDate;
-        public static void AddingDateAndOrcNr(List<string> WordList , eInvoice invoice)
+        }
+        public static void AddingTotalSum(List<string> WordList, eInvoice invoice)
         {
+            var lenght = WordList.Count;
+            string numbersPattern = @"(\d{1,7})+(,\d{1,2})|(\d{1,7})+([\.]\d{1,2})|(\d{1,7})";
+            Regex rgx = new Regex(numbersPattern);
+            for (int i = 0; i < lenght; i++)
+            {
                 
-                var lenght = WordList.Count;
-                List<string> DateList = new List<string>();
-                List<string> OrcList = new List<string>();
-                int i ;
-                int j = 0;
-                string pattern = @"([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))";
-                string numbersPattern = @"^[0-9]*$";
-                string patternOrcNr = @"^[0-9]{"+j+"}$";
-                Regex rgx = new Regex(pattern);
-                Regex rgx2 = new Regex(numbersPattern);
-                for (i = 0; i < lenght; i++)
+                if (WordList[i] == "Summa" && WordList[i + 1] == "att" && WordList[i + 2] == "betala" || WordList[i] == "Summa" && WordList[i + 1] == "att" && WordList[i + 2] == "betala:" || WordList[i] == "Totalt" && WordList[i + 1] == "att" && WordList[i + 2] == "betala")
                 {
-
-                    if (WordList[i] == "Faktura" && WordList[i + 1] == "datum" || WordList[i] == "Fakturadatum" || WordList[i] == "Invocedate" || WordList[i] == "Fakturadatum:")
+                    
+                    for (int g =i ; g < lenght; g++)
                     {
-                        
-
-                        for (int g = i ; g < lenght; g++)
+                        foreach (Match match in rgx.Matches(WordList[g]))
                         {
-
-                            foreach (Match match in rgx.Matches(WordList[g]))
+                            if (match.Success == true)
                             {
-                                if (match.Success == true)
-                                {
-                                    InvoceDate = DateTime.Parse(WordList[g]);
-                                    DateList.Add(WordList[g]);
-                                    g = lenght;
-                                    break;
-                                }
+                                invoice.Amount = double.Parse(WordList[g]);
+                                break;
                             }
                         }
                     }
-                    if (WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" && WordList[i + 2] == "senast" || WordList[i] == "Betalnings" && WordList[i + 1] == "dag" || WordList[i] == "Dudate" || WordList[i] == "Fakturadatum:")
+                }
+                if (WordList[i] == "Att" && WordList[i + 1] == "betala" || WordList[i] == "Total" && WordList[i + 1] == "summa" || WordList[i] == "Total" && WordList[i + 1] == "amount")
+                {
+                    for (int g = i; g < lenght; g++)
                     {
+                        foreach (Match match in rgx.Matches(WordList[g]))
+                        {
+                            if (match.Success == true)
+                            {
+                                invoice.Amount = double.Parse(WordList[g]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (WordList[i] == "Summa" || WordList[i] == "Fakturanummer" || WordList[i] == "Invoice")
+                {
+                    for (int g = i; g < lenght; g++)
+                    {
+                        foreach (Match match in rgx.Matches(WordList[g]))
+                        {
+                            if (match.Success == true)
+                            {
+                                invoice.Amount = double.Parse(WordList[g]);
+                                break;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        public static DateTime InvoceDate;
+        public static DateTime DuDate;
+        public static void AddingDateAndOrcNr(List<string> WordList, eInvoice invoice)
+        {
+
+            var lenght = WordList.Count;
+            List<string> DateList = new List<string>();
+            List<string> OrcList = new List<string>();
+            int i;
+            int j = 0;
+            //pattern för att matcha alla sorters datum
+            string datePattern = @"([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[123]\d|1[01])|((0[1-9]|[123]\d|1[01]|\S|[12]\d{3})[\.](0[1-9]|1[0-2]|\S)[\.]([12]\d{3}|0[0-9]|[123]\d|1[0]))|((0?[13578]|10|12)(-|\/)(([1-9])|(0[1-9])|([123])([0-9]?)|(1[0123]?))(-|\/)((19)([2-9])(\d{1})|(20)([01])(\d{1})|([8901])(\d{1}))|(0?[2469]|11)(-|\/)(([1-9])|(0[1-9])|([123])([0-9]?)|(3[0]?))(-|\/)((19)([2-9])(\d{1})|(20)([01])(\d{1})|([8901])(\d{1}))))";
+            string numbersPattern = @"^[0-9]*$";
+            string patternOrcNr = @"^[0-9]{" + j + "}$";
+            string patternCuttDate = @"^ (\d{1}-(0[1 - 9] | 1[0 - 2]) - (0[1 - 9] |[12]\d | 1[01]))$";
+            bool rättDatum = false;
+            Regex rgx = new Regex(datePattern);
+            Regex rgx2 = new Regex(numbersPattern);
+            Regex rgxCuttDate = new Regex(patternCuttDate);
+            for (i = 0; i < lenght; i++)
+            {
+
+                if (WordList[i] == "Faktura" && WordList[i + 1] == "datum" || WordList[i] == "Fakturadatum" || WordList[i] == "Invocedate" || WordList[i] == "Fakturadatum:" || WordList[i] == "Datum")
+                {
+
+
+                    for (int g = i; g < lenght; g++)
+                    {
+                        //om datumet är delat
+                        bool containsNum1 = Regex.IsMatch(WordList[g], @"^(\d{1}-(0[1 - 9] | 1[0 - 2]) - (0[1 - 9] |[12]\d | 1[01]))$");
+                        if (containsNum1)
+                        {
+                            var heltDatum = WordList[g - 1] + WordList[g];
+                            bool heltDatumMatch = Regex.IsMatch(heltDatum, datePattern);
+                            if (heltDatumMatch)
+                            {
+                                InvoceDate = DateTime.Parse(WordList[g]);
+                                DateList.Add(WordList[g]);
+                                g = lenght;
+                                break;
+                            }
+                        }
+                        foreach (Match match in rgx.Matches(WordList[g]))
+                        {
+                            if (match.Success == true)
+                            {
+                                 InvoceDate = DateTime.Parse(WordList[g]);
+                                 DateList.Add(WordList[g]);
+                                 g = lenght;
+                                 break;
+                            }
+                        }
+                    }
+                }
+            }
+            int count = 0;
+            for (i = 0; i < lenght; i++)
+            {
+                if (WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" && WordList[i + 2] == "senast" || WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" || WordList[i] == "Betalnings" && WordList[i + 1] == "dag" || WordList[i] == "Dudate" || WordList[i] == "Förfallodatum" || WordList[i] == "Förfallet" || WordList[i] == "Förfallodag" || WordList[i] == "Förfallodatum:")
+                {
+                    
                         for (int g = i; g < lenght; g++)
                         {
+                            bool containsNum1 = Regex.IsMatch(WordList[g], @"^(\d{ 1}-(0[1 - 9] | 1[0 - 2]) - (0[1 - 9] |[12]\d | 1[01]))$");
+                            if (containsNum1)
+                            {
+                                var heltDatum = WordList[g - 1] + WordList[g];
+                                bool heltDatumMatch = Regex.IsMatch(heltDatum, datePattern);
+                                if (heltDatumMatch)
+                                {
+                                    DuDate = DateTime.Parse(heltDatum);
+                                    DateList.Add(heltDatum);
+                                    rättDatum = compareDate(DuDate, InvoceDate, invoice);
+                                    if (rättDatum == true)
+                                    {
+                                        g = lenght;
+                                        break;
+                                    }
+                                }
+                            }
                             foreach (Match match in rgx.Matches(WordList[g]))
                             {
                                 if (match.Success == true)
                                 {
                                     DuDate = DateTime.Parse(WordList[g]);
                                     DateList.Add(WordList[g]);
-                                    int result = DateTime.Compare((DuDate), (InvoceDate));
-                                //is earlier than
-                                    if (result < 0)
+                                    rättDatum = compareDate(DuDate, InvoceDate, invoice);
+                                    if (rättDatum == true)
                                     {
-                                        invoice.DueD = invoice.ToString();
-                                        invoice.InvoiceD = DuDate.ToString();
-
                                         g = lenght;
                                         break;
                                     }
-                                    //is the same time as
-                                    else if (result == 0)
-                                    {
                                     
-                                    }
-                                    //is later than
-                                    else
-                                    {
-
-                                        invoice.DueD = DuDate.ToString();
-                                        invoice.InvoiceD = invoice.ToString();
-
-                                        g = lenght;
-                                        break;
-
                                    
-                                    }
-                                
-                               
                                 }
                             }
-                        }
-                    }
-                    //Kollar längden på nummren och plockaq ut längden på ocr-nummret
-                    foreach (Match match in rgx2.Matches(WordList[i]))
-                    {
-                        if (match.Success == true && WordList[i].Length > 4 )
-                        {
-                            var nr = WordList[i];
-                            if (WordList[i].Length <= 9)
+                            if (rättDatum == false && g == lenght - 1)
                             {
-                                var h = WordList[i].Count()-2;
-                            
-                                    var chValue = (int)Char.GetNumericValue(nr[h]);
-                                    if (chValue == (WordList[i].Length) )
-                                    {
-                                        if (true == checkIfItIsAOrgNr(WordList[i]))
-                                        {
-
-                                            OrcList.Add(WordList[i]);
-                                            invoice.Ocr = WordList[i];
-                                            break;
-                                        }
-                                        
-                                    }
-                                  
-                            }
-                            else if (WordList[i].Length > 9)
-                            {
-                                var h = WordList[i].Count() - 2;
-                                for (int g = 0; g < WordList[i].Length; g++)
+                                count++;
+                                g = 1;
+                                if (count <= 2)
                                 {
-                                   
-                                    g = h;
-                                    var c = (int)Char.GetNumericValue(nr[g]); 
-                                    var tioTal = c + 10;
-                                    g++;
-                                    var OcrNrLängd = tioTal;
-                                    if (OcrNrLängd == WordList[i].Length) 
-                                    {
-                                        OrcList.Add(WordList[i]);
-                                        g = WordList[i].Length;
-                                        invoice.Ocr = WordList[i];
-                                        break;
-                                    }
-
+                                    break;
                                 }
                             }
                         }
+                    
+                }
+            }
+            for (i = 0; i < lenght; i++)
+            {
+                //Kollar längden på nummren och plockaq ut längden på ocr-nummret
+                foreach (Match match in rgx2.Matches(WordList[i]))
+                {
+                    if (match.Success == true && WordList[i].Length > 4)
+                    {
+                        var nr = WordList[i];
+                        if (WordList[i].Length <= 9)
+                        {
+                            var h = WordList[i].Count() - 2;
+
+                            var chValue = (int)Char.GetNumericValue(nr[h]);
+                            if (chValue == (WordList[i].Length))
+                            {
+                                if (true == checkIfItIsAOrgNr(WordList[i]))
+                                {
+
+                                    OrcList.Add(WordList[i]);
+                                    invoice.Ocr = WordList[i];
+                                    break;
+                                }
+
+                            }
+
+                        }
+                        else if (WordList[i].Length > 9)
+                        {
+                            var h = WordList[i].Count() - 2;
+                            for (int g = 0; g < WordList[i].Length; g++)
+                            {
+
+                                g = h;
+                                var c = (int)Char.GetNumericValue(nr[g]);
+                                var tioTal = c + 10;
+                                g++;
+                                var OcrNrLängd = tioTal;
+                                if (OcrNrLängd == WordList[i].Length)
+                                {
+                                    OrcList.Add(WordList[i]);
+                                    g = WordList[i].Length;
+                                    invoice.Ocr = WordList[i];
+                                    break;
+                                }
+
+                            }
+                        }
                     }
+                }
 
-                 }
-                //jämför datum älsta är när fakturan ska betalas och tidigaste är fakturadatum
-            //var dateListLenght = DateList.Count();
-
-            
-            
-            //for (i = 0; i < dateListLenght; i++)
-            //{
-            //    j = i + 1;
-            //    if(j > dateListLenght)
-            //    {
-            //        j = dateListLenght;
-            //    }
-            //    int result = DateTime.Compare( DateTime.Parse( DateList[i]), DateTime.Parse(DateList[j]));
-
-            //    //is earlier than
-            //    if (result < 0)
-            //    {
-            //        invoice.DueD = DateTime.Parse(DateList[j]).ToString();
-            //        invoice.InvoiceD = DateTime.Parse(DateList[i]).ToString();
-                    
-            //        break;
-            //    }
-            //    //is the same time as
-            //    else if (result == 0)
-            //    {
-            //        InvoceDate = DateTime.Parse(DateList[j]);
-            //    }
-            //    //is later than
-            //    else
-            //    {
-
-            //        invoice.DueD = DateTime.Parse(DateList[i]).ToString();
-            //        invoice.InvoiceD = DateTime.Parse(DateList[j]).ToString();
-            //        //var date = DateTime.Parse(DateList[i]);
-            //        //var dateOnly = date.Date;
-            //        //var lastDate1 = DateTime.ParseExact(DateList[i], "yyyy-MM-dd", null);
-            //        //var FirstDate = DateTime.ParseExact(DateList[j], "yyyy-MM-dd", null);
-            //        //string json1 = JsonConvert.SerializeObject(dateOnly.Date);
-            //        //string json2 = JsonConvert.SerializeObject(FirstDate.Date);
-            //        //string json1 = lastDate1.ToUniversalTime().ToString("s") + "Z";
-            //        //string json2 = FirstDate.ToUniversalTime().ToString("s") + "Z";
-            //        //invoice.DueDate = DateTime.Parse(json1);
-            //        //invoice.InvoiceDate = DateTime.Parse(json2);
+            }
+        
+        //jämför datum älsta är när fakturan ska betalas och tidigaste är fakturadatum
+        //var dateListLenght = DateList.Count();
 
 
-            //        break;
-            //    }
-                    
-            //}
-               
+
+        //for (i = 0; i < dateListLenght; i++)
+        //{
+        //    j = i + 1;
+        //    if(j > dateListLenght)
+        //    {
+        //        j = dateListLenght;
+        //    }
+        //    int result = DateTime.Compare( DateTime.Parse( DateList[i]), DateTime.Parse(DateList[j]));
+
+        //    //is earlier than
+        //    if (result < 0)
+        //    {
+        //        invoice.DueD = DateTime.Parse(DateList[j]).ToString();
+        //        invoice.InvoiceD = DateTime.Parse(DateList[i]).ToString();
+
+        //        break;
+        //    }
+        //    //is the same time as
+        //    else if (result == 0)
+        //    {
+        //        InvoceDate = DateTime.Parse(DateList[j]);
+        //    }
+        //    //is later than
+        //    else
+        //    {
+
+        //        invoice.DueD = DateTime.Parse(DateList[i]).ToString();
+        //        invoice.InvoiceD = DateTime.Parse(DateList[j]).ToString();
+        //        //var date = DateTime.Parse(DateList[i]);
+        //        //var dateOnly = date.Date;
+        //        //var lastDate1 = DateTime.ParseExact(DateList[i], "yyyy-MM-dd", null);
+        //        //var FirstDate = DateTime.ParseExact(DateList[j], "yyyy-MM-dd", null);
+        //        //string json1 = JsonConvert.SerializeObject(dateOnly.Date);
+        //        //string json2 = JsonConvert.SerializeObject(FirstDate.Date);
+        //        //string json1 = lastDate1.ToUniversalTime().ToString("s") + "Z";
+        //        //string json2 = FirstDate.ToUniversalTime().ToString("s") + "Z";
+        //        //invoice.DueDate = DateTime.Parse(json1);
+        //        //invoice.InvoiceDate = DateTime.Parse(json2);
+
+
+        //        break;
+        //    }
+
+        //}
+
+    
+        }
+        public static bool compareDate(DateTime duDate , DateTime invoceDate, eInvoice invoice)
+        {
+            int result = DateTime.Compare((DuDate), (InvoceDate));
+            //is earlier than
+            if (result < 0)
+            {
+                invoice.DueD = InvoceDate.ToString();
+                invoice.InvoiceD = DuDate.ToString();
+
+                
+                
+                return true;
+            }
+            //is the same time as
+            else if (result == 0)
+            {
+                return false;
+            }
+            //is later than
+            else
+            {
+
+                invoice.DueD = DuDate.ToString();
+                invoice.InvoiceD = InvoceDate.ToString();
+
+                
+                return true;
+
+
+            }
         }
         public static void GetMons(List<string> WordList , eInvoice invoice)
         {
@@ -635,6 +796,25 @@ namespace WebApplication1
             double MomsTjugoFem = 1.25;
             double MomsTolv = 1.12;
             double MomsSex = 1.06;
+            var lenght = MoneyList.Count;
+            string patternDecimal = @"^\d+[\.](\d{1,2})$";
+            Regex rgx = new Regex(patternDecimal);
+
+            for (int i = 0; i < lenght; i++)
+            {
+                bool containsNum1 = Regex.IsMatch(MoneyList[i], @"^\d+[\.](\d{1,2})$");
+                if (containsNum1)
+                {
+                    var value = MoneyList[i];
+                        MoneyList.Remove(value);
+                        var newValue = value.Replace(".", ",");
+                        MoneyList.Add(newValue);
+
+                    i--;
+                }
+
+            }
+           
             
                 double max = Convert.ToDouble(MoneyList.OrderByDescending(v => double.Parse(v)).FirstOrDefault());
                 var max2 = MoneyList.OrderByDescending(v => double.Parse( v)).FirstOrDefault();
@@ -704,9 +884,23 @@ namespace WebApplication1
         {
             
         }
-        public static void addToModel(eInvoice eInvoice)
+        public static void kollaAlltData(eInvoice eInvoice)
         {
-            
+            //Om viktig data är null skicka filen till oläsbar och välj nästa
+            if(eInvoice.images1.Count == 0 || eInvoice.Amount == 0  || eInvoice.DueD == null ||eInvoice.InvoiceD ==null || (eInvoice.OrgNo == null && eInvoice.Pg == null && eInvoice.Bg == null))
+            {
+                eInvoice.Redable = false;
+               //BildLäs.FindAndKillProcess("AcroRd32.exe");
+               // string path = @"C:\OläsbaraPdf\";
+               // Program.MovePdf(Program.FilePhth, path+Program.FileName);
+               // var pdf = Program.ReadFiles();
+               // int NrOfPages = Program.NumberOfPagesPdf(pdf);
+               // await Program.ExtraktAndGetImages(pdf, NrOfPages);
+            }
+            else
+            {
+                eInvoice.Redable = true;
+            }
         }
         public static async Task PostModelToController(eInvoice ListOfData)
         {
@@ -720,78 +914,145 @@ namespace WebApplication1
                 await httpClient.PostAsync("/eInvoices/TestPost", str);
             }
         }
+
        
+
+        public static async Task saveToDb(eInvoice invoice)
+        {
+            var context = new WebApplication1Context();
+            context.eInvoice.Add(invoice);
+            await context.SaveChangesAsync();
+            var pdf = Program.ReadFiles();
+            int NrOfPages = Program.NumberOfPagesPdf(pdf);
+            await Program.ExtraktAndGetImages(pdf, NrOfPages);
+        }
+
+        public static async Task PosErrorPdf(eInvoice ListOfData)
+        {
+            var jsonString = await Task.Run(() => JsonConvert.SerializeObject(ListOfData, Formatting.None, new JavaScriptDateTimeConverter()));
+            //string javascriptJson = JsonConvert.SerializeObject(jsonString);
+            var str = new StringContent(jsonString, Encoding.UTF8, "application/json");
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.Timeout = TimeSpan.FromMinutes(30);
+                httpClient.BaseAddress = new Uri("http://localhost:26695/");
+                await httpClient.PostAsync("/eInvoices/TestPost", str);
+            }
+        }
+
         public static List<string> getTheTotalAmount(List<String> WordList)   
         {
+            
+            bool wordListContainsNuberWhitComa = false;
+            bool wordListContainsNuberWhitDot = false;
+            
+            var lenght = WordList.Count();
+            List<string> PengarLista = new List<string>();
+            
+            
+            string patternComa = @"(^\d{1,7})+(,\d{1,2}$)";
+            
+           
+            Regex coma = new Regex(patternComa);
+            foreach(var item in WordList)
+            {
+                if (Regex.IsMatch(item, @"(^\d{1,7})+(,\d{1,2}$)"))
+                {
+                    wordListContainsNuberWhitComa = true;
+                }
+                else if (Regex.IsMatch(item, @"(^\d{1,7})+([\.]\d{1,2}$)"))
+                {
+                    wordListContainsNuberWhitDot = true;
+                }
+               
+            }
+            if (wordListContainsNuberWhitComa == true)
+            {
+                string matchPattern1 = @"(^\d{3})+(,\d{1,2}$)";
+                string matchPattern10 = @"(^\d{1,7})+(,\d{1,2}$)";
+              PengarLista =  chekingIfValuesIsaMatch(WordList, matchPattern1 , matchPattern10);
+            }
+            else if(wordListContainsNuberWhitDot== true)
+            {
+                string matchPattern2 = @"(^\d{3})+([\.]\d{1,2}$)";
+                string matchPattern20 = @"(^\d{1,7})+([\.]\d{1,2}$)";
+                PengarLista = chekingIfValuesIsaMatch(WordList , matchPattern2 , matchPattern20);
+            }
+            else
+            {
+                string matchPattern3 = @"(^\d{3}$)";
+                string matchPattern30 = @"(^\d{1,7}$)";
+                PengarLista = chekingIfValuesIsaMatch(WordList, matchPattern3 ,matchPattern30);
+            }
+           
+            
+
+            return PengarLista;
+        }
+        public static List<string> chekingIfValuesIsaMatch(List<string> WordList, string matchPattern3d , string matchPattern7d)
+        {
+            string patternRenHundra = @"^(^\d{1,3})$";
+            Regex rgx2 = new Regex(patternRenHundra);
+            Regex rgx = new Regex(matchPattern7d);
             int i;
             var lenght = WordList.Count();
             List<string> PengarLista = new List<string>();
-            string patternHundraMedDecimal = @"^(^\d{1,7})+(,\d{1,2})$";
-            string patternRenHundra = @"^(^\d{1,3})$";
-            Regex rgx = new Regex(patternHundraMedDecimal);
-            Regex rgx2 = new Regex(patternRenHundra);
             for (i = 0; i < lenght; i++)
             {
-                
+
                 //kollar om talet har från 1 till 7 siffror och är comma separerat med 2 decimaler
                 foreach (Match match in rgx.Matches(WordList[i]))
                 {
-                    if (match.Success == true  )
+                    if (match.Success == true)
                     {
-                        
-                        
-                            bool containsNum = Regex.IsMatch(match.Value, @"^(^\d{3})+(,\d{1,2})$");
-                            if (containsNum)
+
+
+                        bool containsNum = Regex.IsMatch(match.Value, matchPattern3d);
+                        if (containsNum)
+                        {
+
+                            bool containsNum1 = Regex.IsMatch(WordList[i - 1], @"^(^\d{1,3})$");
+                            if (containsNum1)
                             {
-
-                                bool containsNum1 = Regex.IsMatch(WordList[i - 1], @"^(^\d{1,3})$");
-                                if (containsNum1)
+                                //kollar om föregående talet i listan innehåller 1-3 siffror
+                                foreach (Match match2 in rgx2.Matches(WordList[i - 1]))
                                 {
-                                    //kollar om föregående talet i listan innehåller 1-3 siffror
-                                    foreach (Match match2 in rgx2.Matches(WordList[i - 1]))
+                                    if (match2.Success == true)
                                     {
-                                        if (match2.Success == true)
-                                        {
 
-                                            var sum = match2.Value + match.Value;
-                                            bool containsNum2 = Regex.IsMatch(match2.Value, @"^(^\d{3})$");
-                                            if (containsNum2)
+                                        var sum = match2.Value + match.Value;
+                                        bool containsNum2 = Regex.IsMatch(match2.Value, @"^(^\d{3})$");
+                                        if (containsNum2)
+                                        {
+                                            bool containsNum3 = Regex.IsMatch(WordList[i - 2], @"^(^\d{3})$");
+                                            if (containsNum3)
                                             {
-                                                bool containsNum3 = Regex.IsMatch(WordList[i - 2], @"^(^\d{3})$");
-                                                if (containsNum3)
+                                                //om nummret inehåller 3 siffror kolla om föregående tal är en match
+                                                foreach (Match match3 in rgx2.Matches(WordList[i - 2]))
                                                 {
-                                                    //om nummret inehåller 3 siffror kolla om föregående tal är en match
-                                                    foreach (Match match3 in rgx2.Matches(WordList[i - 2]))
+                                                    if (match3.Success == true)
                                                     {
-                                                        if (match3.Success == true)
+                                                        var sum1 = match3.Value + match2.Value + match.Value;
+                                                        bool containsNum4 = Regex.IsMatch(match3.Value, @"^(^\d{3})$");
+                                                        if (containsNum4)
                                                         {
-                                                            var sum1 = match3.Value + match2.Value + match.Value;
-                                                            bool containsNum4 = Regex.IsMatch(match3.Value, @"^(^\d{3})$");
-                                                            if (containsNum4)
+                                                            foreach (Match match4 in rgx2.Matches(WordList[i - 3]))
                                                             {
-                                                                foreach (Match match4 in rgx2.Matches(WordList[i - 3]))
+                                                                if (match.Success == true)
                                                                 {
-                                                                    if (match.Success == true)
-                                                                    {
-                                                                        var sum2 = match4.Value + match3.Value + match2.Value + match.Value;
-                                                                        PengarLista.Add(sum2);
-                                                                        break;
-                                                                    }
+                                                                    var sum2 = match4.Value + match3.Value + match2.Value + match.Value;
+                                                                    PengarLista.Add(sum2);
+                                                                    break;
                                                                 }
                                                             }
-                                                            else
-                                                            {
-                                                                PengarLista.Add(sum1);
-                                                                break;
-                                                            }
                                                         }
-                                                    
+                                                        else
+                                                        {
+                                                            PengarLista.Add(sum1);
+                                                            break;
+                                                        }
                                                     }
-                                                }
-                                                else
-                                                {
-                                                    PengarLista.Add(sum);
-                                                    break;
+
                                                 }
                                             }
                                             else
@@ -802,32 +1063,107 @@ namespace WebApplication1
                                         }
                                         else
                                         {
-                                            PengarLista.Add(match2.Value);
+                                            PengarLista.Add(sum);
                                             break;
                                         }
-
-
                                     }
-                                }
-                                else
-                                {
-                                    PengarLista.Add(match.Value);
-                                    break;
-                                }
+                                    else
+                                    {
+                                        PengarLista.Add(match2.Value);
+                                        break;
+                                    }
 
-                        }
+
+                                }
+                            }
                             else
                             {
                                 PengarLista.Add(match.Value);
+                                break;
                             }
-                       
+
+                        }
+
+                        else
+                        {
+
+                            PengarLista.Add(match.Value);
+                        }
+
                     }
                 }
             }
 
             return PengarLista;
         }
-        public static void GetOrgNumber(List<string> WordList , eInvoice invoice)
+        public static void orgNrMatchning(List<string> WordList, eInvoice invoice) {
+            int lenght = WordList.Count();
+            string patternOrgNr = @"^[0-9]{10}$";
+            string patternOrgNrWhitALineInIt = @"^([0-9]{6}-[0-9]{4})$";
+            string patternVatNr = @"^([SE]+[0-9]{12})$";
+            Regex rgx = new Regex(patternOrgNr);
+            Regex rgx2 = new Regex(patternOrgNrWhitALineInIt);
+            Regex rgx3 = new Regex(patternVatNr);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < lenght; i++)
+            {
+                if (WordList[i] == "Organisationsnummer" || WordList[i] == "company" && WordList[i + 1] == "reg" && WordList[i + 2] == "no" || WordList[i] == "vat" && WordList[i + 1] == "no" || WordList[i] == "momsnr"  || WordList[i] == "our" && WordList[i +1] == "vat-no" || WordList[i] == "vat" || WordList[i] == "vat" && WordList[i + 1] == "number" || WordList[i] == "vat" && WordList[i + 1] == "reg" && WordList[i + 2] == "no" || WordList[i] == "vat.nr:" || WordList[i] == "vårt" && WordList[i + 1] == "moms" && WordList[i + 2] == "reg.nr" || WordList[i] == "VATno" || WordList[i] == "Corporate" && WordList[i + 1] == "ID" || WordList[i] == "REG" && WordList[i + 1] == "NO:" )
+                { 
+                    for(int j = i; j <lenght; j++)
+                    {
+                        
+                        foreach (Match match in rgx3.Matches(WordList[j]))
+                        {
+                            if (match.Success == true &&  WordList[i] != "SE556695422701")
+                            {
+                                string selectedWord = WordList[j];
+                                for(int k = 0; k < WordList[j].Length; k++)
+                                {
+                                    if (k >= 2 && k < 12)
+                                    {
+                                        stringBuilder.Append(selectedWord[k]);
+                                    }
+                                }
+                                if (true == checkIfItIsAOrgNr(stringBuilder.ToString()))
+                                {
+                                    
+                                    invoice.OrgNo = stringBuilder.ToString();
+                                    break;
+                                }
+                            }
+                        }
+                        foreach (Match match in rgx2.Matches(WordList[j]))
+                        {
+                            if (match.Success == true && WordList[j] !="556695-4227")
+                            {
+
+                                if (true == checkIfItIsAOrgNr(WordList[j]))
+                                {
+
+                                    invoice.OrgNo = WordList[j];
+                                    break;
+                                }
+                            }
+                        }
+                        foreach (Match match in rgx.Matches(WordList[j]))
+                        {
+                            if (match.Success == true &&  WordList[j] != "5566954227")
+                            {
+                                if (true == checkIfItIsAOrgNr(WordList[j]))
+                                {
+                                   
+                                    invoice.OrgNo = WordList[j];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                    }
+
+                }
+        }
+        }
+            public static void GetOrgNumber(List<string> WordList , eInvoice invoice)
         {
             int i;
             var lenght = WordList.Count();
@@ -842,7 +1178,7 @@ namespace WebApplication1
                 
                 foreach (Match match in rgx.Matches(WordList[i]) )
                 {
-                    if (match.Success == true)
+                    if (match.Success == true && WordList[i] != "556695-4227" || WordList[i] != "5566954227")
                     {
                         if (true == checkIfItIsAOrgNr(WordList[i]))
                         {
@@ -853,7 +1189,7 @@ namespace WebApplication1
                 }
                 foreach (Match match in  rgx2.Matches(WordList[i]))
                 {
-                    if (match.Success == true)
+                    if (match.Success == true && WordList[i] != "556695-4227")
                     {
 
                         if (true == checkIfItIsAOrgNr(WordList[i]))
@@ -970,7 +1306,36 @@ namespace WebApplication1
 
             return deserializedUser;
         }
-       
+        static public bool FindAndKillProcess(string name)
+        {
+            //here we're going to get a list of all running processes on
+            //the computer
+            foreach (Process clsProcess in Process.GetProcesses())
+            {
+                //now we're going to see if any of the running processes
+                //match the currently running processes by using the StartsWith Method,
+                //this prevents us from incluing the .EXE for the process we're looking for.
+                //. Be sure to not
+                //add the .exe to the name you provide, i.e: NOTEPAD,
+                //not NOTEPAD.EXE or false is always returned even if
+                //notepad is running
+                if (clsProcess.ProcessName.StartsWith(name))
+                {
+                    //since we found the proccess we now need to use the
+                    //Kill Method to kill the process. Remember, if you have
+                    //the process running more than once, say IE open 4
+                    //times the loop thr way it is now will close all 4,
+                    //if you want it to just close the first one it finds
+                    //then add a return; after the Kill
+                    clsProcess.Kill();
+                    //process killed, return true
+                    return true;
+                }
+            }
+            //process not found, return false
+            return false;
+        }
+
     }
  }
     

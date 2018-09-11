@@ -11,9 +11,10 @@ using WebApplication1.Models;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(WebApplication1Context))]
-    partial class WebApplication1ContextModelSnapshot : ModelSnapshot
+    [Migration("20180831093105_ImageId")]
+    partial class ImageId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,9 +126,9 @@ namespace WebApplication1.Migrations
 
                     b.Property<string>("ImageName");
 
-                    b.Property<int>("eInvoiceId");
+                    b.Property<int>("eInvoceId");
 
-                    b.Property<string>("imageMimeType");
+                    b.Property<int?>("eInvoiceId");
 
                     b.HasKey("ImagesId");
 
@@ -191,8 +192,7 @@ namespace WebApplication1.Migrations
                 {
                     b.HasOne("WebApplication1.Models.eInvoice")
                         .WithMany("images1")
-                        .HasForeignKey("eInvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("eInvoiceId");
                 });
 
             modelBuilder.Entity("WebApplication1.Models.InvoiceAccounts", b =>

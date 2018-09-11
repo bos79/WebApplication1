@@ -34,9 +34,9 @@
                 <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="InvoiceDate" class="control-label"></label>
-                <input asp-for="InvoiceDate" class="form-control" />
-                <span asp-validation-for="InvoiceDate" class="text-danger"></span>
+                <label asp-for="InvoiceD" class="control-label"></label>
+                <input asp-for="InvoiceD" class="form-control" />
+                <span asp-validation-for="InvoiceD" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <div class="checkbox">
@@ -46,9 +46,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="DueDate" class="control-label"></label>
-                <input asp-for="DueDate" class="form-control" />
-                <span asp-validation-for="DueDate" class="text-danger"></span>
+                <label asp-for="DueD" class="control-label"></label>
+                <input asp-for="DueD" class="form-control" />
+                <span asp-validation-for="DueD" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <div class="checkbox">
@@ -180,6 +180,18 @@
                 <span asp-validation-for="Project" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="pdfPaths" class="control-label"></label>
+                <input asp-for="pdfPaths" class="form-control" />
+                <span asp-validation-for="pdfPaths" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input asp-for="Redable" /> @Html.DisplayNameFor(model => model.Redable)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-default" />
             </div>
         </form>
@@ -190,6 +202,3 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

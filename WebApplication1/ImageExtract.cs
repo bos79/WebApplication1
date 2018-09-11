@@ -18,6 +18,8 @@ namespace WebApplication1
 
     public static class PdfImageExtractor
     {
+        public static int increment = 0;
+
         public static string CurrentFilename;
         #region Methods
 
@@ -163,7 +165,7 @@ namespace WebApplication1
 
             public void EndTextBlock() { }
 
-            public static int increment = 0;
+            
             public void RenderImage(ImageRenderInfo renderInfo)
             {
                 PdfImageObject image = renderInfo.GetImage();
@@ -222,19 +224,35 @@ namespace WebApplication1
                 this.Images.Add(drawingImage, extension);
                 string filename = @"C:\Images\" + pages + "\\";
                 bool exists = System.IO.Directory.Exists(filename);
-                increment++;
+                PdfImageExtractor.increment++;
                 if (!exists)
                 {
                     System.IO.Directory.CreateDirectory(filename);
                 }
                 //string fullName = filename + image.Get(PdfName.NAME).ToString() + increment + ".JPG";
-                if (increment <= pages)
+                if (PdfImageExtractor.increment <= pages)
                 {
-                    string fullName2 = filename + "im" + increment + ".JPG";
+                    string fullName2 = filename + "im" + PdfImageExtractor.increment + ".JPG";
                     byte[] byteArray = Encoding.UTF8.GetBytes(fullName2);
-                    MemoryStream stream = new MemoryStream(byteArray);
+                    MemoryStream stream = new MemoryStream();
+                    drawingImage.Save(stream, drawingImage.RawFormat);
                     drawingImage.Save(fullName2, ImageFormat.Gif);
-                    //var JasonReturn= BildLäs.Main2(name);
+                    if ( Program.invoice.images1.Any(m => m.ImageName == fullName2))
+                    {
+                        
+                    }
+                    else
+                    {
+                        Program.invoice.images1.Add(new Models.Images()
+                        {
+
+                            ImageName = fullName2,
+
+                            ImageData = stream.ToArray()
+                        });
+                    }
+                    
+                   
                 }
             }
             catch (IOException e)
