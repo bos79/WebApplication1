@@ -1,0 +1,101 @@
+﻿@model IEnumerable<WebApplication1.Models.suplierModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierOrgNr)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierPgNr)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierBgNr)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.currencyCode)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierOrgNrFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierPgNrFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierBgNrFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.currencyFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.purchOrderNoFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.invoiceDateFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierOrcNrFormat)
+                </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierOrgNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierPgNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierBgNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.currencyCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierOrgNrFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierPgNrFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierBgNrFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.currencyFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.purchOrderNoFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.invoiceDateFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierOrcNrFormat)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.suplierId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.suplierId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.suplierId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

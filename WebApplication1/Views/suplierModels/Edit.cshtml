@@ -1,0 +1,86 @@
+﻿@model WebApplication1.Models.suplierModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+
+<h4>suplierModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="suplierId" />
+            <div class="form-group">
+                <label asp-for="suplierName" class="control-label"></label>
+                <input asp-for="suplierName" class="form-control" />
+                <span asp-validation-for="suplierName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierOrgNr" class="control-label"></label>
+                <input asp-for="suplierOrgNr" class="form-control" />
+                <span asp-validation-for="suplierOrgNr" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierPgNr" class="control-label"></label>
+                <input asp-for="suplierPgNr" class="form-control" />
+                <span asp-validation-for="suplierPgNr" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierBgNr" class="control-label"></label>
+                <input asp-for="suplierBgNr" class="form-control" />
+                <span asp-validation-for="suplierBgNr" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="currencyCode" class="control-label"></label>
+                <input asp-for="currencyCode" class="form-control" />
+                <span asp-validation-for="currencyCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierOrgNrFormat" class="control-label"></label>
+                <input asp-for="suplierOrgNrFormat" class="form-control" />
+                <span asp-validation-for="suplierOrgNrFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierPgNrFormat" class="control-label"></label>
+                <input asp-for="suplierPgNrFormat" class="form-control" />
+                <span asp-validation-for="suplierPgNrFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierBgNrFormat" class="control-label"></label>
+                <input asp-for="suplierBgNrFormat" class="form-control" />
+                <span asp-validation-for="suplierBgNrFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="currencyFormat" class="control-label"></label>
+                <input asp-for="currencyFormat" class="form-control" />
+                <span asp-validation-for="currencyFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="purchOrderNoFormat" class="control-label"></label>
+                <input asp-for="purchOrderNoFormat" class="form-control" />
+                <span asp-validation-for="purchOrderNoFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="invoiceDateFormat" class="control-label"></label>
+                <input asp-for="invoiceDateFormat" class="form-control" />
+                <span asp-validation-for="invoiceDateFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="suplierOrcNrFormat" class="control-label"></label>
+                <input asp-for="suplierOrcNrFormat" class="form-control" />
+                <span asp-validation-for="suplierOrcNrFormat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

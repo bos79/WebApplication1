@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace WebApplication1.Controllers
 {
@@ -27,10 +29,16 @@ namespace WebApplication1.Controllers
             _context.Add(invoice);
             await _context.SaveChangesAsync();
             var pdf = Program.ReadFiles();
-            int NrOfPages = Program.NumberOfPagesPdf(pdf);
-            await Program.ExtraktAndGetImages(pdf, NrOfPages);
+            if (Program.websiteRunsWhenFalse != false)
+            {
+
+                int NrOfPages = Program.NumberOfPagesPdf(pdf);
+                await Program.ExtraktAndGetImages(pdf, NrOfPages);
+
+            }
+            
+            Program.BuildWebHost(new string[0]).Run();
             return View();
-          
         }
         // GET: eInvoices
         public async Task<IActionResult> Index()

@@ -1,0 +1,90 @@
+﻿@model WebApplication1.Models.suplierModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>suplierModel</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierOrgNr)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierOrgNr)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierPgNr)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierPgNr)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierBgNr)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierBgNr)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.currencyCode)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.currencyCode)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierOrgNrFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierOrgNrFormat)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierPgNrFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierPgNrFormat)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierBgNrFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierBgNrFormat)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.currencyFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.currencyFormat)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.purchOrderNoFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.purchOrderNoFormat)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.invoiceDateFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.invoiceDateFormat)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.suplierOrcNrFormat)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.suplierOrcNrFormat)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.suplierId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

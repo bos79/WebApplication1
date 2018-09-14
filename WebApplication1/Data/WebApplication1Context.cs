@@ -22,6 +22,12 @@ namespace WebApplication1.Models
 
         public DbSet<WebApplication1.Models.Images> Images { get; set; }
 
+        public DbSet<WebApplication1.Models.customerModel> customerModel { get; set; }
+
+        public DbSet<WebApplication1.Models.companyModell> companyModell { get; set; }
+
+        public DbSet<WebApplication1.Models.suplierModel> suplierModel { get; set; }
+
         //public DbSet<WebApplication1.Models.File> File { get; set; }
     }
 }

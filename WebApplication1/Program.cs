@@ -31,13 +31,14 @@ namespace WebApplication1
 {
     public class Program
     {
-        public static eInvoice invoice = new eInvoice();
+        public static eInvoice invoice;
         public static int count = 1;
         public static string pdfName;
         public static bool websiteRunsWhenFalse = true;
         public static void Main(string[] args)
         {
             pdfName = ReadFiles();
+            
             if (websiteRunsWhenFalse != false)
             {
                 
@@ -67,7 +68,7 @@ namespace WebApplication1
 
 
                 var Images = ReadImages(invoice);
-                await BildLäs.Main2(Images.Where(m => m.Contains(Program.count.ToString())).FirstOrDefault());
+                await BildLäs.Main2(Images.Where(m => m.Contains("im"+Program.count.ToString())).FirstOrDefault());
 
             }
         }
@@ -320,7 +321,7 @@ namespace WebApplication1
                 // Assemble the URI for the REST API Call.
                 string uri = uriBase + "?" + requestParameters;
 
-                HttpResponseMessage response;
+                HttpResponseMessage response = new HttpResponseMessage();
 
                 // Request body. Posts a locally stored JPEG image.
                 byte[] byteData = GetImageAsByteArray(imageFilePath);
@@ -369,8 +370,8 @@ namespace WebApplication1
                 {
                 };
                 //AddingTotalSum(Program.CombineList, Program.invoice);
-                var cashList = getTheTotalAmount(Program.CombineList);
-                
+               // var cashList = getTheTotalAmount(Program.CombineList);
+                var cashList = removeDotsFromNumber(getTheTotalAmount(Program.CombineList));
                 AddingFakturaNr(Program.CombineList,Program.invoice);
                 if (cashList.Count != 0)
                 {
@@ -379,7 +380,7 @@ namespace WebApplication1
                 }
                 GetMons(Program.CombineList, Program.invoice);
                 orgNrMatchning(Program.CombineList, Program.invoice);
-                GetOrgNumber(Program.CombineList, Program.invoice);
+                //GetOrgNumber(Program.CombineList, Program.invoice);
                 AddingDateAndOrcNr(Program.CombineList, Program.invoice);
                 Program.FileName = Program.genereraPdfNamn();
                 Program.invoice.pdfPaths = Program.FileName;
@@ -538,7 +539,7 @@ namespace WebApplication1
             for (i = 0; i < lenght; i++)
             {
 
-                if (WordList[i] == "Faktura" && WordList[i + 1] == "datum" || WordList[i] == "Fakturadatum" || WordList[i] == "Invocedate" || WordList[i] == "Fakturadatum:" || WordList[i] == "Datum")
+                if (WordList[i] == "Faktura" && WordList[i + 1] == "datum" || WordList[i] == "Fakturadatum" || WordList[i] == "Invocedate" || WordList[i] == "Fakturadatum:" || WordList[i] == "Datum" || WordList[i] == "Invoce" && WordList[i +1] == "date:")
                 {
 
 
@@ -574,12 +575,12 @@ namespace WebApplication1
             int count = 0;
             for (i = 0; i < lenght; i++)
             {
-                if (WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" && WordList[i + 2] == "senast" || WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" || WordList[i] == "Betalnings" && WordList[i + 1] == "dag" || WordList[i] == "Dudate" || WordList[i] == "Förfallodatum" || WordList[i] == "Förfallet" || WordList[i] == "Förfallodag" || WordList[i] == "Förfallodatum:")
+                if (WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" && WordList[i + 2] == "senast" || WordList[i] == "Oss" && WordList[i + 1] == "tillhanda" || WordList[i] == "Betalnings" && WordList[i + 1] == "dag" || WordList[i] == "Duedate" || WordList[i] == "Förfallodatum" || WordList[i] == "Förfallet" || WordList[i] == "Förfallodag" || WordList[i] == "Förfallodatum:" || WordList[i] == "Due" && WordList[i+1] == "date:")
                 {
                     
                         for (int g = i; g < lenght; g++)
                         {
-                            bool containsNum1 = Regex.IsMatch(WordList[g], @"^(\d{ 1}-(0[1 - 9] | 1[0 - 2]) - (0[1 - 9] |[12]\d | 1[01]))$");
+                            bool containsNum1 = Regex.IsMatch(WordList[g], @"^(\d{1}-(0[1-9]|1[0-2])-(0[1-9][12]\d|1[01]))$");
                             if (containsNum1)
                             {
                                 var heltDatum = WordList[g - 1] + WordList[g];
@@ -616,7 +617,7 @@ namespace WebApplication1
                             {
                                 count++;
                                 g = 1;
-                                if (count <= 2)
+                                if (count >= 2)
                                 {
                                     break;
                                 }
@@ -785,37 +786,54 @@ namespace WebApplication1
                 }
             
         }
-        
-        //kollar om moms o max värdet stämmer om det är så skicka till db
-        public static void getTheMaxValueAndCalculateMons(List<String> MoneyList, eInvoice eInvoice)
+        public static List<string> removeDotsFromNumber (List<string> MoneyList)
         {
-            bool match = false;
-            
-            List<string> TotaltVärde = new List<string>();
-            List<double> TotalMoms = new List<double>();
-            double MomsTjugoFem = 1.25;
-            double MomsTolv = 1.12;
-            double MomsSex = 1.06;
             var lenght = MoneyList.Count;
-            string patternDecimal = @"^\d+[\.](\d{1,2})$";
-            Regex rgx = new Regex(patternDecimal);
 
             for (int i = 0; i < lenght; i++)
             {
+
+                bool containsNum2 = Regex.IsMatch(MoneyList[i], @"(^\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)");
+                if (containsNum2)
+                {
+                    var value = MoneyList[i];
+                    MoneyList.Remove(value);
+                    var newValue = value.Replace(".", "");
+                    MoneyList.Add(newValue);
+
+                    i--;
+                }
+
                 bool containsNum1 = Regex.IsMatch(MoneyList[i], @"^\d+[\.](\d{1,2})$");
                 if (containsNum1)
                 {
                     var value = MoneyList[i];
-                        MoneyList.Remove(value);
-                        var newValue = value.Replace(".", ",");
-                        MoneyList.Add(newValue);
+                    MoneyList.Remove(value);
+                    var newValue = value.Replace(".", ",");
+                    MoneyList.Add(newValue);
 
                     i--;
                 }
 
             }
-           
+
+            return MoneyList;
+        }
+
+        //kollar om moms o max värdet stämmer om det är så skicka till db
+        public static void getTheMaxValueAndCalculateMons(List<String> MoneyList, eInvoice eInvoice)
+        {
+                bool match = false;
             
+                List<string> TotaltVärde = new List<string>();
+                List<double> TotalMoms = new List<double>();
+                double MomsTjugoFem = 1.25;
+                double MomsTolv = 1.12;
+                double MomsSex = 1.06;
+                var lenght = MoneyList.Count;
+                string patternDecimal = @"^\d+[\.](\d{1,2})$";
+                Regex rgx = new Regex(patternDecimal);
+
                 double max = Convert.ToDouble(MoneyList.OrderByDescending(v => double.Parse(v)).FirstOrDefault());
                 var max2 = MoneyList.OrderByDescending(v => double.Parse( v)).FirstOrDefault();
                 //Öres utjämning
@@ -956,11 +974,11 @@ namespace WebApplication1
             Regex coma = new Regex(patternComa);
             foreach(var item in WordList)
             {
-                if (Regex.IsMatch(item, @"(^\d{1,7})+(,\d{1,2}$)"))
+                if (Regex.IsMatch(item, @"(^\d{1,7})+(,\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)"))
                 {
                     wordListContainsNuberWhitComa = true;
                 }
-                else if (Regex.IsMatch(item, @"(^\d{1,7})+([\.]\d{1,2}$)"))
+                else if (Regex.IsMatch(item, @"(^\d{1,7})+([\.]\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,3})+([\.]\d{1,2}$)"))
                 {
                     wordListContainsNuberWhitDot = true;
                 }
@@ -969,19 +987,19 @@ namespace WebApplication1
             if (wordListContainsNuberWhitComa == true)
             {
                 string matchPattern1 = @"(^\d{3})+(,\d{1,2}$)";
-                string matchPattern10 = @"(^\d{1,7})+(,\d{1,2}$)";
+                string matchPattern10 = @"(^\d{1,7})+(,\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)";
               PengarLista =  chekingIfValuesIsaMatch(WordList, matchPattern1 , matchPattern10);
             }
             else if(wordListContainsNuberWhitDot== true)
             {
                 string matchPattern2 = @"(^\d{3})+([\.]\d{1,2}$)";
-                string matchPattern20 = @"(^\d{1,7})+([\.]\d{1,2}$)";
+                string matchPattern20 = @"(^\d{1,7})+([\.]\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,3})+([\.]\d{1,2}$)";
                 PengarLista = chekingIfValuesIsaMatch(WordList , matchPattern2 , matchPattern20);
             }
             else
             {
                 string matchPattern3 = @"(^\d{3}$)";
-                string matchPattern30 = @"(^\d{1,7}$)";
+                string matchPattern30 = @"(^\d{1,7}$)|(^\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)|(^\d{1,3})+([\.]\d{1,3})+([\.]\d{1,3})+(,\d{1,2}$)";
                 PengarLista = chekingIfValuesIsaMatch(WordList, matchPattern3 ,matchPattern30);
             }
            
@@ -1107,7 +1125,7 @@ namespace WebApplication1
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < lenght; i++)
             {
-                if (WordList[i] == "Organisationsnummer" || WordList[i] == "company" && WordList[i + 1] == "reg" && WordList[i + 2] == "no" || WordList[i] == "vat" && WordList[i + 1] == "no" || WordList[i] == "momsnr"  || WordList[i] == "our" && WordList[i +1] == "vat-no" || WordList[i] == "vat" || WordList[i] == "vat" && WordList[i + 1] == "number" || WordList[i] == "vat" && WordList[i + 1] == "reg" && WordList[i + 2] == "no" || WordList[i] == "vat.nr:" || WordList[i] == "vårt" && WordList[i + 1] == "moms" && WordList[i + 2] == "reg.nr" || WordList[i] == "VATno" || WordList[i] == "Corporate" && WordList[i + 1] == "ID" || WordList[i] == "REG" && WordList[i + 1] == "NO:" )
+                if (WordList[i] == "Organisationsnummer" || WordList[i] == "Organisationsnummer:" || WordList[i] == "Organisations" && WordList[i + 1] == "nr:" || WordList[i] == "VAT" && WordList[i + 1] == "NO:" || WordList[i] == "company" && WordList[i + 1] == "reg" && WordList[i + 2] == "no" || WordList[i] == "vat" && WordList[i + 1] == "no" || WordList[i] == "Momsnummer" || WordList[i] == "Momsnummer:" || WordList[i] == "momsnr"  || WordList[i] == "our" && WordList[i +1] == "vat-no" || WordList[i] == "vat" || WordList[i] == "vat" && WordList[i + 1] == "number" || WordList[i] == "vat" && WordList[i + 1] == "reg" && WordList[i + 2] == "no" || WordList[i] == "vat.nr:" || WordList[i] == "vårt" && WordList[i + 1] == "moms" && WordList[i + 2] == "reg.nr" || WordList[i] == "VATno" || WordList[i] == "Corporate" && WordList[i + 1] == "ID" || WordList[i] == "REG" && WordList[i + 1] == "NO:" )
                 { 
                     for(int j = i; j <lenght; j++)
                     {
@@ -1128,6 +1146,8 @@ namespace WebApplication1
                                 {
                                     
                                     invoice.OrgNo = stringBuilder.ToString();
+                                    j = lenght-1;
+                                    i = lenght-1;
                                     break;
                                 }
                             }
@@ -1141,6 +1161,8 @@ namespace WebApplication1
                                 {
 
                                     invoice.OrgNo = WordList[j];
+                                    j = lenght-1;
+                                    i = lenght-1;
                                     break;
                                 }
                             }
@@ -1153,6 +1175,8 @@ namespace WebApplication1
                                 {
                                    
                                     invoice.OrgNo = WordList[j];
+                                    j = lenght-1;
+                                    i = lenght-1;
                                     break;
                                 }
                             }
