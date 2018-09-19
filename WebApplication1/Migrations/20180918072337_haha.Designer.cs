@@ -11,9 +11,10 @@ using WebApplication1.Models;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(WebApplication1Context))]
-    partial class WebApplication1ContextModelSnapshot : ModelSnapshot
+    [Migration("20180918072337_haha")]
+    partial class haha
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

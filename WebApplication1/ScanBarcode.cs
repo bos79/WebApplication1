@@ -20,7 +20,7 @@ namespace WebApplication1
     public class scanBarcode
     {
 
-
+        //har försökt att använda zxing.core för att scana in QRcoder men fans ingen documentation tilgänglig då
         public static void  Main3(string[] args)
         {
 

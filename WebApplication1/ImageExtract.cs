@@ -229,7 +229,7 @@ namespace WebApplication1
                 {
                     System.IO.Directory.CreateDirectory(filename);
                 }
-                //string fullName = filename + image.Get(PdfName.NAME).ToString() + increment + ".JPG";
+                
                 if (PdfImageExtractor.increment <= pages)
                 {
                     string fullName2 = filename + "im" + PdfImageExtractor.increment + ".JPG";
@@ -243,6 +243,7 @@ namespace WebApplication1
                     }
                     else
                     {
+                        //sparar bilden till modellen
                         Program.invoice.images1.Add(new Models.Images()
                         {
 
@@ -260,7 +261,7 @@ namespace WebApplication1
                 Console.WriteLine(e);
             }
                     
-            //}
+  
         }
 
 

@@ -55,17 +55,31 @@ namespace WebApplication1.Models
 
         public string suplierOrgNrFormat { get; set; }
 
+        public string suplierOrgNrWordMatch { get; set; }
+
         public string suplierPgNrFormat { get; set; }
+
+        public string suplierPgNrWordMatch { get; set; }
 
         public string suplierBgNrFormat { get; set; }
 
+        public string suplierBgNrWordMatch { get; set; }
+
         public string currencyFormat { get; set; }
+
+        public string currencyWordMatch { get; set; }
 
         public string purchOrderNoFormat { get; set; }
 
+        public string purchOrderNoWordMatch { get; set; }
+
         public string invoiceDateFormat { get; set; }
 
+        public string invoiceDateWordMatch { get; set; }
+
         public string suplierOrcNrFormat { get; set; }
+
+        public string suplierOrcNrWordMatch { get; set; }
 
 
     }

@@ -41,6 +41,24 @@ namespace WebApplication1.Controllers
 
             return View(suplierModel);
         }
+        // GET: suplierModels/Details/5
+        [HttpPost]
+        public  async Task<suplierModel> getSuplierByOrgNr([FromBody] eInvoice eInvoice)
+        {
+            if (eInvoice.OrgNo == null)
+            {
+                return null;
+            }
+
+            var suplierModel = await _context.suplierModel
+                .SingleOrDefaultAsync(m => m.suplierOrgNr == eInvoice.OrgNo);
+            if (suplierModel == null)
+            {
+                return null;
+            }
+
+            return suplierModel;
+        }
 
         // GET: suplierModels/Create
         public IActionResult Create()
@@ -53,7 +71,7 @@ namespace WebApplication1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("suplierId,suplierName,suplierOrgNr,suplierPgNr,suplierBgNr,currencyCode,suplierOrgNrFormat,suplierPgNrFormat,suplierBgNrFormat,currencyFormat,purchOrderNoFormat,invoiceDateFormat,suplierOrcNrFormat")] suplierModel suplierModel)
+        public async Task<IActionResult> Create([Bind("suplierId,suplierName,suplierOrgNr,suplierPgNr,suplierBgNr,currencyCode,suplierOrgNrFormat,suplierOrgNrWordMatch,suplierPgNrFormat,suplierPgNrWordMatch,suplierBgNrFormat,suplierBgNrWordMatch,currencyFormat,currencyWordMatch,purchOrderNoFormat,purchOrderNoWordMatch,invoiceDateFormat,invoiceDateWordMatch,suplierOrcNrFormat,suplierOrcNrWordMatch")] suplierModel suplierModel)
         {
             if (ModelState.IsValid)
             {
@@ -85,7 +103,7 @@ namespace WebApplication1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("suplierId,suplierName,suplierOrgNr,suplierPgNr,suplierBgNr,currencyCode,suplierOrgNrFormat,suplierPgNrFormat,suplierBgNrFormat,currencyFormat,purchOrderNoFormat,invoiceDateFormat,suplierOrcNrFormat")] suplierModel suplierModel)
+        public async Task<IActionResult> Edit(int id, [Bind("suplierId,suplierName,suplierOrgNr,suplierPgNr,suplierBgNr,currencyCode,suplierOrgNrFormat,suplierOrgNrWordMatch,suplierPgNrFormat,suplierPgNrWordMatch,suplierBgNrFormat,suplierBgNrWordMatch,currencyFormat,currencyWordMatch,purchOrderNoFormat,purchOrderNoWordMatch,invoiceDateFormat,invoiceDateWordMatch,suplierOrcNrFormat,suplierOrcNrWordMatch")] suplierModel suplierModel)
         {
             if (id != suplierModel.suplierId)
             {

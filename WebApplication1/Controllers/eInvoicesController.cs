@@ -43,14 +43,10 @@ namespace WebApplication1.Controllers
         // GET: eInvoices
         public async Task<IActionResult> Index()
         {
-            //List< List<Images>> item = new List<List<Images>>();
-            //item.Add( await _context.eInvoice.Select(m => m.images1).ToListAsync());
-
-            //byte[] photoBack = item.InternalImage;
+ 
             eInvoice invoice = new eInvoice();
             invoice.ListImages = await _context.Images.ToListAsync();
             var invoiceList = await _context.eInvoice.ToListAsync();
-            //invoiceList = _context.eInvoice.Include(m => m.ListImages);
             foreach(var item in invoiceList)
             {
                 item.ListImages = await _context.Images.Where(m => m.eInvoiceId == item.eInvoiceId).ToListAsync();

@@ -28,8 +28,8 @@ namespace WebApplication1
             services.AddDbContext<WebApplication1Context>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("WebApplication1Context")));
 
-            services.AddDbContext<DBRepositoryContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("DBRepositoryContext")));
+            //services.AddDbContext<DBRepositoryContext>(options =>
+            //        options.UseSqlServer(Configuration.GetConnectionString("DBRepositoryContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

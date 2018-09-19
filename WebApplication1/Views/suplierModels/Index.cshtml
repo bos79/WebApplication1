@@ -31,22 +31,43 @@
                     @Html.DisplayNameFor(model => model.suplierOrgNrFormat)
                 </th>
                 <th>
+                    @Html.DisplayNameFor(model => model.suplierOrgNrWordMatch)
+                </th>
+                <th>
                     @Html.DisplayNameFor(model => model.suplierPgNrFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierPgNrWordMatch)
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.suplierBgNrFormat)
                 </th>
                 <th>
+                    @Html.DisplayNameFor(model => model.suplierBgNrWordMatch)
+                </th>
+                <th>
                     @Html.DisplayNameFor(model => model.currencyFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.currencyWordMatch)
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.purchOrderNoFormat)
                 </th>
                 <th>
+                    @Html.DisplayNameFor(model => model.purchOrderNoWordMatch)
+                </th>
+                <th>
                     @Html.DisplayNameFor(model => model.invoiceDateFormat)
                 </th>
                 <th>
+                    @Html.DisplayNameFor(model => model.invoiceDateWordMatch)
+                </th>
+                <th>
                     @Html.DisplayNameFor(model => model.suplierOrcNrFormat)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.suplierOrcNrWordMatch)
                 </th>
             <th></th>
         </tr>
@@ -73,22 +94,43 @@
                 @Html.DisplayFor(modelItem => item.suplierOrgNrFormat)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.suplierOrgNrWordMatch)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.suplierPgNrFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierPgNrWordMatch)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.suplierBgNrFormat)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.suplierBgNrWordMatch)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.currencyFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.currencyWordMatch)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.purchOrderNoFormat)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.purchOrderNoWordMatch)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.invoiceDateFormat)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.invoiceDateWordMatch)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.suplierOrcNrFormat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suplierOrcNrWordMatch)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.suplierId">Edit</a> |
